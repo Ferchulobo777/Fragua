@@ -1,0 +1,35 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+
+[*.{cs,axaml,xaml}]
+indent_size = 4
+
+[*.{json,yml,yaml,svg,mjs,js}]
+indent_size = 2
+
+[*.{csproj,props,targets,slnx}]
+indent_size = 2
+
+[*.cs]
+csharp_style_namespace_declarations = file_scoped:error
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_prefer_braces = true:suggestion
+dotnet_sort_system_directives_first = true
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:error
+dotnet_style_readonly_field = true:warning
+
+# Los nombres de los parametros de los records de dominio siguen la convencion
+# de propiedad publica, no la de parametro.
+dotnet_naming_rule.record_parameters.severity = none
+
+[tests/**/*.cs]
+# Nombre_del_metodo_en_espanol_describiendo_el_escenario es la convencion de
+# test elegida a proposito (xUnit + Verify la usan tambien): mas legible en
+# el explorador de tests que PascalCase corrido.
+dotnet_diagnostic.CA1707.severity = none

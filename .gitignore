@@ -1,0 +1,30 @@
+# Compilacion
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+*.user
+*.suo
+
+# Herramientas
+.vs/
+.idea/
+.vscode/
+*.DotSettings.user
+
+# Modelos ONNX: pesan decenas de MB y se descargan en el build
+# o en el primer arranque, nunca van al repositorio.
+models/*.onnx
+
+# Salidas del generador de iconos
+brand/out/
+
+# Instaladores
+dist/
+*.msi
+*.exe.config
+
+# Sistema operativo
+Thumbs.db
+.DS_Store

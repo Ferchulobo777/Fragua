@@ -1,0 +1,80 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!--
+    Paleta acromatica pura (croma 0), segun el plan de diseno: la interfaz de
+    una herramienta de imagen no puede competir con la imagen que muestra. El
+    unico color de toda la app es el acento brasa, y se usa solo para accion
+    primaria, seleccion activa y progreso.
+  -->
+  <Color x:Key="FraguaCanvasColor">#141414</Color>
+  <Color x:Key="FraguaPanelColor">#1C1C1C</Color>
+  <Color x:Key="FraguaElevatedColor">#262626</Color>
+  <Color x:Key="FraguaFieldColor">#161616</Color>
+  <Color x:Key="FraguaLineColor">#333333</Color>
+  <Color x:Key="FraguaLineStrongColor">#4A4A4A</Color>
+
+  <Color x:Key="FraguaTextColor">#F5F5F5</Color>
+  <Color x:Key="FraguaTextMediumColor">#B8B8B8</Color>
+  <Color x:Key="FraguaTextMutedColor">#8A8A8A</Color>
+
+  <Color x:Key="FraguaEmberColor">#F27636</Color>
+  <Color x:Key="FraguaEmberStrongColor">#D9601F</Color>
+  <Color x:Key="FraguaSuccessColor">#6FCB9F</Color>
+  <Color x:Key="FraguaErrorColor">#E0605A</Color>
+  <Color x:Key="FraguaWarningColor">#E0B950</Color>
+
+  <SolidColorBrush x:Key="FraguaCanvasBrush" Color="{StaticResource FraguaCanvasColor}" />
+  <SolidColorBrush x:Key="FraguaPanelBrush" Color="{StaticResource FraguaPanelColor}" />
+  <SolidColorBrush x:Key="FraguaElevatedBrush" Color="{StaticResource FraguaElevatedColor}" />
+  <SolidColorBrush x:Key="FraguaFieldBrush" Color="{StaticResource FraguaFieldColor}" />
+  <SolidColorBrush x:Key="FraguaLineBrush" Color="{StaticResource FraguaLineColor}" />
+  <SolidColorBrush x:Key="FraguaLineStrongBrush" Color="{StaticResource FraguaLineStrongColor}" />
+
+  <SolidColorBrush x:Key="FraguaTextBrush" Color="{StaticResource FraguaTextColor}" />
+  <SolidColorBrush x:Key="FraguaTextMediumBrush" Color="{StaticResource FraguaTextMediumColor}" />
+  <SolidColorBrush x:Key="FraguaTextMutedBrush" Color="{StaticResource FraguaTextMutedColor}" />
+
+  <SolidColorBrush x:Key="FraguaEmberBrush" Color="{StaticResource FraguaEmberColor}" />
+
+  <!-- FluentTheme colorea checkboxes, radios y selecciones con su acento por
+       defecto (un rosa/violeta de sistema). Se pisa con el unico acento real
+       de Fragua para no romper la regla de "un solo color, y es brasa". -->
+  <Color x:Key="SystemAccentColor">#F27636</Color>
+  <Color x:Key="SystemAccentColorLight1">#F5924F</Color>
+  <Color x:Key="SystemAccentColorLight2">#F7A96C</Color>
+  <Color x:Key="SystemAccentColorLight3">#F9C08A</Color>
+  <Color x:Key="SystemAccentColorDark1">#D9601F</Color>
+  <Color x:Key="SystemAccentColorDark2">#B54F1A</Color>
+  <Color x:Key="SystemAccentColorDark3">#923F14</Color>
+  <SolidColorBrush x:Key="FraguaEmberStrongBrush" Color="{StaticResource FraguaEmberStrongColor}" />
+  <SolidColorBrush x:Key="FraguaSuccessBrush" Color="{StaticResource FraguaSuccessColor}" />
+  <SolidColorBrush x:Key="FraguaErrorBrush" Color="{StaticResource FraguaErrorColor}" />
+  <SolidColorBrush x:Key="FraguaWarningBrush" Color="{StaticResource FraguaWarningColor}" />
+
+  <!-- Espaciado: 4 - 8 - 12 - 16 - 24 - 32 - 48 -->
+  <x:Double x:Key="SpaceXs">4</x:Double>
+  <x:Double x:Key="SpaceSm">8</x:Double>
+  <x:Double x:Key="SpaceMd">12</x:Double>
+  <x:Double x:Key="SpaceLg">16</x:Double>
+  <x:Double x:Key="SpaceXl">24</x:Double>
+  <x:Double x:Key="Space2xl">32</x:Double>
+  <x:Double x:Key="Space3xl">48</x:Double>
+
+  <!-- Radios: 4 control chico, 8 control, 12 panel, 999 pill -->
+  <CornerRadius x:Key="RadiusSm">4</CornerRadius>
+  <CornerRadius x:Key="RadiusMd">8</CornerRadius>
+  <CornerRadius x:Key="RadiusLg">12</CornerRadius>
+  <CornerRadius x:Key="RadiusPill">999</CornerRadius>
+
+  <!-- Escala tipografica fija: registro de producto, no de marca. -->
+  <x:Double x:Key="TextXs">11</x:Double>
+  <x:Double x:Key="TextSm">12</x:Double>
+  <x:Double x:Key="TextMd">13</x:Double>
+  <x:Double x:Key="TextLg">15</x:Double>
+  <x:Double x:Key="TextXl">18</x:Double>
+  <x:Double x:Key="Text2xl">22</x:Double>
+  <x:Double x:Key="Text3xl">28</x:Double>
+
+  <FontFamily x:Key="FontUi">avares://Fragua.App/Assets/Fonts/MonaSans#Mona Sans</FontFamily>
+  <FontFamily x:Key="FontMono">avares://Fragua.App/Assets/Fonts/CommitMono#CommitMono</FontFamily>
+</ResourceDictionary>

@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Fragua.App/Fragua.App.csproj" />
+    <Project Path="src/Fragua.Core/Fragua.Core.csproj" />
+    <Project Path="src/Fragua.Imaging/Fragua.Imaging.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Fragua.Tests/Fragua.Tests.csproj" />
+  </Folder>
+</Solution>

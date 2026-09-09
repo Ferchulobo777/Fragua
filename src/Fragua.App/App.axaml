@@ -1,0 +1,25 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Fragua.App.App"
+             xmlns:local="using:Fragua.App"
+             RequestedThemeVariant="Dark">
+             <!-- Oscuro por defecto: en herramientas de imagen reduce la interferencia
+                  perceptual con el contenido, no es una preferencia estetica. -->
+
+    <Application.DataTemplates>
+        <local:ViewLocator />
+    </Application.DataTemplates>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://Fragua.App/Styles/Tokens.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://Fragua.App/Styles/Controls.axaml" />
+    </Application.Styles>
+</Application>

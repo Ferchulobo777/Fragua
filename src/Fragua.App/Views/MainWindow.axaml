@@ -1,0 +1,216 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Fragua.App.ViewModels"
+        xmlns:conv="using:Fragua.App.Converters"
+        xmlns:convData="using:Avalonia.Data.Converters"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="620"
+        x:Class="Fragua.App.Views.MainWindow"
+        x:DataType="vm:ConvertViewModel"
+        Icon="avares://Fragua.App/Assets/Icons/fragua.ico"
+        Title="Fragua"
+        Width="960" Height="640" MinWidth="720" MinHeight="520"
+        DragDrop.AllowDrop="True">
+
+  <Window.Resources>
+    <conv:ByteSizeConverter x:Key="ByteSize" />
+    <conv:BoolToBrushConverter x:Key="StatusBrush"
+                               TrueBrush="{StaticResource FraguaErrorBrush}"
+                               FalseBrush="{StaticResource FraguaTextMutedBrush}" />
+  </Window.Resources>
+
+  <Grid ColumnDefinitions="220,*" Background="{DynamicResource FraguaCanvasBrush}">
+
+    <!-- Barra lateral: una sola pantalla en fase 0, pero la estructura ya
+         deja lugar a Lotes, Historial y Ajustes de las fases siguientes. -->
+    <Border Grid.Column="0" Background="{DynamicResource FraguaPanelBrush}"
+            BorderBrush="{DynamicResource FraguaLineBrush}" BorderThickness="0,0,1,0">
+      <Grid RowDefinitions="Auto,*,Auto" Margin="16,20">
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="6,0,0,30">
+          <Image Source="avares://Fragua.App/Assets/Icons/fragua-32.png" Width="24" Height="24" />
+          <TextBlock Text="Fragua" FontSize="{DynamicResource TextLg}" FontWeight="SemiBold"
+                     VerticalAlignment="Center" LetterSpacing="-0.1" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Spacing="2">
+          <Button Classes="nav active">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <Canvas Width="16" Height="16" VerticalAlignment="Center">
+                <Path Data="M2 5h9M8 2l3 3-3 3M14 11H5M8 14l-3-3 3-3"
+                      Stroke="{DynamicResource FraguaEmberBrush}" StrokeThickness="1.6"
+                      StrokeLineCap="Round" StrokeJoin="Round" />
+              </Canvas>
+              <TextBlock Text="Convertir" FontWeight="Medium" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+
+          <Button Classes="nav" IsEnabled="False">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <Canvas Width="16" Height="16" VerticalAlignment="Center">
+                <Rectangle Canvas.Left="2" Canvas.Top="2" Width="12" Height="2" RadiusX="1" RadiusY="1"
+                           Fill="{DynamicResource FraguaTextMutedBrush}" />
+                <Rectangle Canvas.Left="2" Canvas.Top="7" Width="12" Height="2" RadiusX="1" RadiusY="1"
+                           Fill="{DynamicResource FraguaTextMutedBrush}" Opacity="0.7" />
+                <Rectangle Canvas.Left="2" Canvas.Top="12" Width="8" Height="2" RadiusX="1" RadiusY="1"
+                           Fill="{DynamicResource FraguaTextMutedBrush}" Opacity="0.45" />
+              </Canvas>
+              <TextBlock Text="Lotes" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+
+          <Button Classes="nav" IsEnabled="False">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <Canvas Width="16" Height="16" VerticalAlignment="Center">
+                <Ellipse Canvas.Left="1" Canvas.Top="1" Width="14" Height="14"
+                         Stroke="{DynamicResource FraguaTextMutedBrush}" StrokeThickness="1.4" />
+                <Path Data="M8 4.5v3.8l2.6 2.1" Stroke="{DynamicResource FraguaTextMutedBrush}"
+                      StrokeThickness="1.4" StrokeLineCap="Round" StrokeJoin="Round" />
+              </Canvas>
+              <TextBlock Text="Historial" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+
+          <Button Classes="nav" IsEnabled="False">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <Canvas Width="16" Height="16" VerticalAlignment="Center">
+                <Line StartPoint="2,4" EndPoint="14,4" Stroke="{DynamicResource FraguaTextMutedBrush}" StrokeThickness="1.4" />
+                <Ellipse Canvas.Left="7.5" Canvas.Top="2.5" Width="3" Height="3" Fill="{DynamicResource FraguaTextMutedBrush}" />
+                <Line StartPoint="2,8" EndPoint="14,8" Stroke="{DynamicResource FraguaTextMutedBrush}" StrokeThickness="1.4" />
+                <Ellipse Canvas.Left="3.5" Canvas.Top="6.5" Width="3" Height="3" Fill="{DynamicResource FraguaTextMutedBrush}" />
+                <Line StartPoint="2,12" EndPoint="14,12" Stroke="{DynamicResource FraguaTextMutedBrush}" StrokeThickness="1.4" />
+                <Ellipse Canvas.Left="10" Canvas.Top="10.5" Width="3" Height="3" Fill="{DynamicResource FraguaTextMutedBrush}" />
+              </Canvas>
+              <TextBlock Text="Ajustes" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+        </StackPanel>
+
+        <TextBlock Grid.Row="2" Text="Fase 0 · v0.1" Classes="muted" FontSize="{DynamicResource TextXs}"
+                   Margin="10,0,0,0" />
+      </Grid>
+    </Border>
+
+    <!-- Zona de trabajo -->
+    <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Margin="32,28" Spacing="20" MaxWidth="640" HorizontalAlignment="Center">
+
+        <StackPanel Spacing="4">
+          <TextBlock Text="Convertir" Classes="heading" />
+          <TextBlock Text="Redimensiona y convierte una imagen, sin que salga de esta maquina."
+                     Classes="muted" />
+        </StackPanel>
+
+        <!-- Zona de soltar / archivo actual -->
+        <Border x:Name="DropZone" Classes="dropzone" Padding="24" MinHeight="140">
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Grid.Column="0" Spacing="10" IsVisible="{Binding !HasSource}"
+                        HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Canvas Width="30" Height="30" HorizontalAlignment="Center">
+                <Path Data="M15 22V9M9.5 14.5 15 9l5.5 5.5M6 24h18"
+                      Stroke="{DynamicResource FraguaTextMutedBrush}" StrokeThickness="1.8"
+                      StrokeLineCap="Round" StrokeJoin="Round" />
+              </Canvas>
+              <TextBlock Text="Solta una imagen aca" HorizontalAlignment="Center" FontWeight="Medium" />
+              <TextBlock Text="o hace clic para elegirla" Classes="muted" HorizontalAlignment="Center" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="0" Spacing="4" IsVisible="{Binding HasSource}"
+                        VerticalAlignment="Center">
+              <TextBlock Text="{Binding SourcePath}" TextTrimming="CharacterEllipsis" />
+              <StackPanel Orientation="Horizontal" Spacing="12">
+                <TextBlock Classes="muted">
+                  <Run Text="{Binding SourceAsset.WidthPixels}" />
+                  <Run Text="×" />
+                  <Run Text="{Binding SourceAsset.HeightPixels}" />
+                  <Run Text="px" />
+                </TextBlock>
+                <TextBlock Classes="muted"
+                           Text="{Binding SourceAsset.SizeBytes, Converter={StaticResource ByteSize}}" />
+              </StackPanel>
+            </StackPanel>
+
+            <Button Grid.Column="1" Classes="ghost" Content="Elegir..." Click="OnBrowseClick"
+                    VerticalAlignment="Center" />
+          </Grid>
+        </Border>
+
+        <!-- Pipeline: en fase 0 son dos pasos fijos, redimensionar y convertir. -->
+        <Border Classes="panel" Padding="20">
+          <StackPanel Spacing="18">
+
+            <StackPanel Spacing="10">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <CheckBox IsChecked="{Binding ResizeEnabled}" Content="Redimensionar" />
+              </StackPanel>
+
+              <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10" IsEnabled="{Binding ResizeEnabled}">
+                <ComboBox Grid.Column="0" ItemsSource="{Binding AvailableResizeModes}"
+                          SelectedItem="{Binding ResizeMode}" HorizontalAlignment="Stretch" />
+                <TextBox Grid.Column="1" Text="{Binding WidthText}"
+                         PlaceholderText="Ancho" IsVisible="{Binding !IsPercentageMode}" />
+                <TextBox Grid.Column="1" Text="{Binding WidthText}"
+                         PlaceholderText="Porcentaje, ej. 50" IsVisible="{Binding IsPercentageMode}" />
+                <TextBox Grid.Column="2" Text="{Binding HeightText}" PlaceholderText="Alto"
+                         IsVisible="{Binding !IsPercentageMode}" />
+              </Grid>
+            </StackPanel>
+
+            <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
+
+            <StackPanel Spacing="10">
+              <TextBlock Text="Formato de salida" Classes="eyebrow" />
+              <ComboBox ItemsSource="{Binding AvailableFormats}" SelectedItem="{Binding TargetFormat}"
+                        HorizontalAlignment="Stretch" />
+            </StackPanel>
+
+          </StackPanel>
+        </Border>
+
+        <Button Classes="primary" Content="Convertir" Command="{Binding ConvertCommand}"
+                HorizontalAlignment="Left" IsEnabled="{Binding !IsConverting}" />
+
+        <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsConverting}" />
+
+        <!-- El dato que el usuario vino a buscar: peso y dimensiones, antes y despues. -->
+        <Border Classes="panel" Padding="20" IsVisible="{Binding HasResult}">
+          <Grid ColumnDefinitions="*,Auto,*">
+            <StackPanel Grid.Column="0" Spacing="4">
+              <TextBlock Text="Antes" Classes="eyebrow" />
+              <TextBlock Classes="figure"
+                         Text="{Binding SourceAsset.SizeBytes, Converter={StaticResource ByteSize}}" />
+              <TextBlock Classes="muted">
+                <Run Text="{Binding SourceAsset.WidthPixels}" />
+                <Run Text="×" />
+                <Run Text="{Binding SourceAsset.HeightPixels}" />
+              </TextBlock>
+            </StackPanel>
+
+            <TextBlock Grid.Column="1" Text="→" VerticalAlignment="Center" Margin="20,0"
+                       Foreground="{DynamicResource FraguaEmberBrush}" FontSize="{DynamicResource TextXl}" />
+
+            <StackPanel Grid.Column="2" Spacing="4" HorizontalAlignment="Right">
+              <TextBlock Text="Despues" Classes="eyebrow" HorizontalAlignment="Right" />
+              <TextBlock Classes="figure" HorizontalAlignment="Right"
+                         Foreground="{DynamicResource FraguaEmberBrush}"
+                         Text="{Binding ResultAsset.SizeBytes, Converter={StaticResource ByteSize}}" />
+              <TextBlock Classes="muted" HorizontalAlignment="Right">
+                <Run Text="{Binding ResultAsset.WidthPixels}" />
+                <Run Text="×" />
+                <Run Text="{Binding ResultAsset.HeightPixels}" />
+              </TextBlock>
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <TextBlock Text="{Binding StatusMessage}"
+                   IsVisible="{Binding StatusMessage, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
+                   Foreground="{Binding LastRunFailed, Converter={StaticResource StatusBrush}}"
+                   FontSize="{DynamicResource TextSm}" />
+
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+
+</Window>

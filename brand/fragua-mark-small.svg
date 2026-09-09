@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" role="img" aria-label="Fragua">
+  <!-- Version de tamano chico (16 y 24 px). Misma estructura que la marca completa
+       pero con el trazo mucho mas pesado en proporcion, que es lo unico que
+       sobrevive en la barra de tareas y en la barra de titulo. -->
+  <path d="M3 13v-3h3v-3h3"
+        stroke="currentColor" stroke-width="3"
+        stroke-linecap="butt" stroke-linejoin="miter"/>
+  <path d="M9 7c2 0 4-2 4-4"
+        stroke="currentColor" stroke-width="3"
+        stroke-linecap="round"/>
+</svg>

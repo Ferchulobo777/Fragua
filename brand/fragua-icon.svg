@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" role="img" aria-label="Fragua">
+  <rect width="48" height="48" rx="11" fill="#181818"/>
+  <rect x="0.5" y="0.5" width="47" height="47" rx="10.5" stroke="#333333"/>
+  <!-- Origen: rasterizado. Gris, porque es el material que entra. -->
+  <path d="M10 38v-5h6v-5h6v-5h6"
+        stroke="#A4A4A4" stroke-width="5"
+        stroke-linecap="butt" stroke-linejoin="miter"/>
+  <!-- Resultado: vectorial. Brasa, porque es lo que la herramienta produce. -->
+  <path d="M28 23c5-1 9-5 10-12"
+        stroke="#F27636" stroke-width="5"
+        stroke-linecap="round"/>
+</svg>

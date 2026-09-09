@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" role="img" aria-label="Fragua">
+  <rect width="16" height="16" rx="3.5" fill="#181818"/>
+  <path d="M3 13v-3h3v-3h3"
+        stroke="#A4A4A4" stroke-width="3"
+        stroke-linecap="butt" stroke-linejoin="miter"/>
+  <path d="M9 7c2 0 4-2 4-4"
+        stroke="#F27636" stroke-width="3"
+        stroke-linecap="round"/>
+</svg>

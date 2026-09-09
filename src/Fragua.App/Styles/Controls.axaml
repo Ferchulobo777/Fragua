@@ -1,0 +1,185 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <Style Selector="Window">
+    <Setter Property="Background" Value="{DynamicResource FraguaCanvasBrush}" />
+    <Setter Property="FontFamily" Value="{DynamicResource FontUi}" />
+    <Setter Property="FontSize" Value="{DynamicResource TextMd}" />
+  </Style>
+
+  <Style Selector=":is(TemplatedControl)">
+    <Setter Property="Foreground" Value="{DynamicResource FraguaTextBrush}" />
+  </Style>
+
+  <!-- Movimiento: 140-220ms, ease-out, solo para comunicar estado. -->
+  <Style Selector="Button">
+    <Setter Property="Background" Value="{DynamicResource FraguaElevatedBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource FraguaLineBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}" />
+    <Setter Property="Padding" Value="16,10" />
+    <Setter Property="FontSize" Value="{DynamicResource TextMd}" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.14" Easing="CubicEaseOut" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.14" Easing="CubicEaseOut" />
+        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.14" Easing="CubicEaseOut" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Button:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#2F2F2F" />
+  </Style>
+  <Style Selector="Button:pressed">
+    <Setter Property="RenderTransform" Value="scale(0.98)" />
+  </Style>
+  <Style Selector="Button:disabled">
+    <Setter Property="Opacity" Value="0.4" />
+  </Style>
+
+  <!-- Boton primario: la unica accion en pantalla que lleva el acento brasa,
+       con un resplandor suave que lo separa del resto de la superficie. -->
+  <Style Selector="Button.primary">
+    <Setter Property="Background" Value="{DynamicResource FraguaEmberBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource FraguaEmberBrush}" />
+    <Setter Property="Foreground" Value="#161616" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Padding" Value="20,11" />
+    <Setter Property="Effect">
+      <DropShadowEffect Color="#F27636" Opacity="0.35" BlurRadius="18" OffsetX="0" OffsetY="3" />
+    </Setter>
+  </Style>
+  <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource FraguaEmberStrongBrush}" />
+  </Style>
+  <Style Selector="Button.primary:disabled">
+    <Setter Property="Effect" Value="{x:Null}" />
+  </Style>
+
+  <Style Selector="Button.ghost">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="Padding" Value="12,9" />
+  </Style>
+  <Style Selector="Button.ghost:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource FraguaElevatedBrush}" />
+  </Style>
+
+  <!-- Item de navegacion: icono + etiqueta, con el estado activo marcado por
+       una pastilla de fondo y un filo brasa a la izquierda, no solo color de texto. -->
+  <Style Selector="Button.nav">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="{DynamicResource RadiusSm}" />
+    <Setter Property="Padding" Value="10,9" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="Foreground" Value="{DynamicResource FraguaTextMutedBrush}" />
+  </Style>
+  <Style Selector="Button.nav:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource FraguaPanelBrush}" />
+  </Style>
+  <Style Selector="Button.nav.active">
+    <Setter Property="Background" Value="#242017" />
+    <Setter Property="Foreground" Value="{DynamicResource FraguaTextBrush}" />
+  </Style>
+  <Style Selector="Button.nav.active:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#242017" />
+  </Style>
+
+  <Style Selector="TextBox">
+    <Setter Property="Background" Value="{DynamicResource FraguaFieldBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource FraguaLineBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{DynamicResource RadiusSm}" />
+    <Setter Property="Padding" Value="11,8" />
+    <Setter Property="CaretBrush" Value="{DynamicResource FraguaEmberBrush}" />
+    <Setter Property="SelectionBrush" Value="#3DF27636" />
+  </Style>
+  <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+    <Setter Property="BorderBrush" Value="{DynamicResource FraguaEmberBrush}" />
+  </Style>
+
+  <Style Selector="ComboBox">
+    <Setter Property="Background" Value="{DynamicResource FraguaFieldBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource FraguaLineBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{DynamicResource RadiusSm}" />
+    <Setter Property="Padding" Value="11,8" />
+  </Style>
+  <Style Selector="ComboBoxItem:selected /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource FraguaEmberBrush}" />
+    <Setter Property="Foreground" Value="#161616" />
+  </Style>
+
+  <Style Selector="CheckBox">
+    <Setter Property="Foreground" Value="{DynamicResource FraguaTextBrush}" />
+  </Style>
+  <Style Selector="CheckBox /template/ Border#NormalRectangle">
+    <Setter Property="Background" Value="{DynamicResource FraguaFieldBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource FraguaLineStrongBrush}" />
+  </Style>
+
+  <Style Selector="ProgressBar">
+    <Setter Property="Background" Value="{DynamicResource FraguaLineBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource FraguaEmberBrush}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource RadiusPill}" />
+    <Setter Property="Height" Value="4" />
+  </Style>
+
+  <!-- Panel elevado: tarjetas, la zona de soltar archivos, el resumen antes/despues.
+       La sombra es lo que separa la tarjeta del canvas, no solo un cambio de gris. -->
+  <Style Selector="Border.panel">
+    <Setter Property="Background" Value="{DynamicResource FraguaPanelBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource FraguaLineBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{DynamicResource RadiusLg}" />
+    <Setter Property="BoxShadow" Value="0 1 2 0 #30000000, 0 8 24 -4 #40000000" />
+  </Style>
+
+  <Style Selector="Border.dropzone">
+    <Setter Property="Background" Value="{DynamicResource FraguaPanelBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource FraguaLineBrush}" />
+    <Setter Property="BorderThickness" Value="1.5" />
+    <Setter Property="CornerRadius" Value="{DynamicResource RadiusLg}" />
+    <Setter Property="BoxShadow" Value="0 1 2 0 #30000000, 0 8 24 -4 #40000000" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.18" Easing="CubicEaseOut" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Border.dropzone.active">
+    <Setter Property="BorderBrush" Value="{DynamicResource FraguaEmberBrush}" />
+    <Setter Property="BoxShadow" Value="0 0 0 3 #22F27636, 0 8 24 -4 #40000000" />
+  </Style>
+
+  <Style Selector="TextBlock.eyebrow">
+    <Setter Property="FontSize" Value="{DynamicResource TextXs}" />
+    <Setter Property="Foreground" Value="{DynamicResource FraguaTextMutedBrush}" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="LetterSpacing" Value="0.4" />
+  </Style>
+
+  <Style Selector="TextBlock.heading">
+    <Setter Property="FontSize" Value="{DynamicResource Text2xl}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="LetterSpacing" Value="-0.2" />
+  </Style>
+
+  <Style Selector="TextBlock.muted">
+    <Setter Property="Foreground" Value="{DynamicResource FraguaTextMutedBrush}" />
+    <Setter Property="FontSize" Value="{DynamicResource TextSm}" />
+  </Style>
+
+  <!-- Cifras: dimensiones, pesos, porcentajes. Siempre en mono, para que
+       alineen entre si cuando cambian. -->
+  <Style Selector="TextBlock.figure">
+    <Setter Property="FontFamily" Value="{DynamicResource FontMono}" />
+    <Setter Property="FontSize" Value="{DynamicResource TextXl}" />
+    <Setter Property="FontWeight" Value="Medium" />
+  </Style>
+
+</Styles>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" role="img" aria-label="Fragua">
+  <!-- El mismo trazo, en sus dos representaciones.
+       Tramo rasterizado: escalones cuadrados, uniones en angulo recto, remates rectos. -->
+  <path d="M10 38v-5h6v-5h6v-5h6"
+        stroke="currentColor" stroke-width="5"
+        stroke-linecap="butt" stroke-linejoin="miter"/>
+  <!-- Tramo vectorial: sale tangente al ultimo escalon y se resuelve en curva. -->
+  <path d="M28 23c5-1 9-5 10-12"
+        stroke="currentColor" stroke-width="5"
+        stroke-linecap="round"/>
+</svg>

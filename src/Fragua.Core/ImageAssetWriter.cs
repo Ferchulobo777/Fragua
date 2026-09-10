@@ -12,5 +12,6 @@ public interface IImageAssetWriter
         ImageAsset input,
         string destinationDirectory,
         ImageFormat format,
+        OptimizeSpec? optimize,
         CancellationToken cancellationToken);
 }

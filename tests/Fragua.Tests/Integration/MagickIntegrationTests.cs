@@ -80,7 +80,7 @@ public sealed class MagickIntegrationTests : IDisposable
         var asset = await loader.LoadAsync(path, CancellationToken.None);
         var destination = Path.Combine(_workDir, "salida");
 
-        var written = await writer.WriteAsync(asset, destination, ImageFormat.Jpeg, CancellationToken.None);
+        var written = await writer.WriteAsync(asset, destination, ImageFormat.Jpeg, optimize: null, CancellationToken.None);
 
         Assert.True(File.Exists(written.SourcePath));
         Assert.EndsWith(".jpg", written.SourcePath);
@@ -99,10 +99,30 @@ public sealed class MagickIntegrationTests : IDisposable
         var originalSize = asset.SizeBytes;
         var destination = Path.Combine(_workDir, "salida");
 
-        var written = await writer.WriteAsync(asset, destination, ImageFormat.WebP, CancellationToken.None);
+        var written = await writer.WriteAsync(asset, destination, ImageFormat.WebP, optimize: null, CancellationToken.None);
 
         Assert.True(written.SizeBytes < originalSize,
             $"WebP ({written.SizeBytes} bytes) deberia pesar menos que el BMP original ({originalSize} bytes).");
+    }
+
+    [Fact]
+    public async Task Writer_optimizar_con_calidad_baja_pesa_menos_que_calidad_alta()
+    {
+        var path = TestImages.CreateNoisyBmp(600, 600, _workDir);
+        var loader = new MagickImageAssetLoader();
+        var writer = new MagickImageAssetWriter();
+        var asset = await loader.LoadAsync(path, CancellationToken.None);
+
+        var altaCalidad = await writer.WriteAsync(
+            asset, Path.Combine(_workDir, "alta"), ImageFormat.Jpeg,
+            new OptimizeSpec(Quality: 95), CancellationToken.None);
+
+        var bajaCalidad = await writer.WriteAsync(
+            asset, Path.Combine(_workDir, "baja"), ImageFormat.Jpeg,
+            new OptimizeSpec(Quality: 20), CancellationToken.None);
+
+        Assert.True(bajaCalidad.SizeBytes < altaCalidad.SizeBytes,
+            $"Calidad 20 ({bajaCalidad.SizeBytes} bytes) deberia pesar menos que calidad 95 ({altaCalidad.SizeBytes} bytes).");
     }
 
     [Fact]

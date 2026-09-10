@@ -9,6 +9,7 @@ public sealed class MagickImageAssetWriter : IImageAssetWriter
         ImageAsset input,
         string destinationDirectory,
         ImageFormat format,
+        OptimizeSpec? optimize,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -17,6 +18,18 @@ public sealed class MagickImageAssetWriter : IImageAssetWriter
 
         using var image = new MagickImage(input.SourcePath);
         image.Format = FormatMapper.ToMagick(format);
+
+        // Calidad y metadatos solo importan en el momento exacto de esta
+        // escritura: es la unica que produce el archivo final.
+        if (optimize is not null)
+        {
+            if (optimize.StripMetadata)
+            {
+                image.Strip();
+            }
+
+            image.Quality = (uint)Math.Clamp(optimize.Quality, 1, 100);
+        }
 
         var fileName = Path.GetFileNameWithoutExtension(input.SourcePath) + FormatMapper.Extension(format);
         var destinationPath = Path.Combine(destinationDirectory, fileName);

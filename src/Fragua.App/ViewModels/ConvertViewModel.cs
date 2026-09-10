@@ -50,6 +50,14 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     private ImageFormat _targetFormat = ImageFormat.WebP;
 
     [ObservableProperty]
+    private bool _optimizeEnabled = true;
+
+    [ObservableProperty]
+    private int _optimizeQuality = 82;
+
+    private OptimizeSpec? BuildOptimizeSpec() => OptimizeEnabled ? new OptimizeSpec(OptimizeQuality) : null;
+
+    [ObservableProperty]
     private bool _isConverting;
 
     [ObservableProperty]
@@ -151,7 +159,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
                 }
             }
 
-            operations.Add(new ConvertFormatOperation(_writer, destinationDirectory, TargetFormat));
+            operations.Add(new ConvertFormatOperation(_writer, destinationDirectory, TargetFormat, BuildOptimizeSpec()));
 
             var job = new ImageJob(SourcePath, destinationDirectory, operations);
 
@@ -346,7 +354,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
                         operations.Add(new ResizeOperation(_resizer, spec));
                     }
                 }
-                operations.Add(new ConvertFormatOperation(_writer, destinationDirectory, TargetFormat));
+                operations.Add(new ConvertFormatOperation(_writer, destinationDirectory, TargetFormat, BuildOptimizeSpec()));
                 return new ImageJob(item.FullPath, destinationDirectory, operations);
             }).ToList();
 

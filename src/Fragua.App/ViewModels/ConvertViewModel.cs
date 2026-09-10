@@ -12,7 +12,7 @@ namespace Fragua.App.ViewModels;
 /// Fase 0 del plan: convertir y redimensionar, en una sola pasada. Nada de
 /// lotes, presets ni historial todavia (eso es fase 1).
 /// </summary>
-public sealed partial class ConvertViewModel : ViewModelBase
+public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
 {
     private readonly ImagePipeline _pipeline;
     private readonly IImageResizer _resizer;
@@ -115,6 +115,8 @@ public sealed partial class ConvertViewModel : ViewModelBase
         LastRunFailed = false;
     }
 
+    private CancellationTokenSource? _convertCts;
+
     [RelayCommand(CanExecute = nameof(CanConvert))]
     private async Task ConvertAsync()
     {
@@ -128,6 +130,9 @@ public sealed partial class ConvertViewModel : ViewModelBase
         LastRunFailed = false;
         ProgressFraction = 0;
         ProgressStepName = "Cargando";
+
+        _convertCts = new CancellationTokenSource();
+        var cancellationToken = _convertCts.Token;
 
         try
         {
@@ -158,8 +163,8 @@ public sealed partial class ConvertViewModel : ViewModelBase
             var channel = Channel.CreateUnbounded<ImageJobProgress>();
             var progress = new Progress<ImageJobProgress>(p => channel.Writer.TryWrite(p));
 
-            var pipelineTask = _pipeline.RunAsync(job, progress, CancellationToken.None);
-            var drainTask = DrainProgressAsync(channel.Reader);
+            var pipelineTask = _pipeline.RunAsync(job, progress, cancellationToken);
+            var drainTask = DrainProgressAsync(channel.Reader, cancellationToken);
 
             var result = await pipelineTask;
             channel.Writer.Complete();
@@ -181,16 +186,31 @@ public sealed partial class ConvertViewModel : ViewModelBase
         finally
         {
             IsConverting = false;
+            _convertCts?.Dispose();
+            _convertCts = null;
         }
     }
 
-    private async Task DrainProgressAsync(ChannelReader<ImageJobProgress> reader)
+    private bool CanCancelConvert() => IsConverting;
+
+    [RelayCommand(CanExecute = nameof(CanCancelConvert))]
+    private void CancelConvert() => _convertCts?.Cancel();
+
+    private async Task DrainProgressAsync(ChannelReader<ImageJobProgress> reader, CancellationToken cancellationToken)
     {
-        await foreach (var p in reader.ReadAllAsync())
+        try
         {
-            ProgressFraction = p.StepFraction;
-            ProgressStepName = p.CurrentStepName;
-            await Task.Delay(220);
+            await foreach (var p in reader.ReadAllAsync(cancellationToken))
+            {
+                ProgressFraction = p.StepFraction;
+                ProgressStepName = p.CurrentStepName;
+                await Task.Delay(220, cancellationToken);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // El pipeline ya corto por su cuenta; el drain no tiene mas nada
+            // que narrar, no es un error.
         }
     }
 
@@ -215,7 +235,11 @@ public sealed partial class ConvertViewModel : ViewModelBase
         };
     }
 
-    partial void OnIsConvertingChanged(bool value) => ConvertCommand.NotifyCanExecuteChanged();
+    partial void OnIsConvertingChanged(bool value)
+    {
+        ConvertCommand.NotifyCanExecuteChanged();
+        CancelConvertCommand.NotifyCanExecuteChanged();
+    }
 
     // --- Lotes: fase 1 en el plan, pero el pipeline de Core ya soporta
     // procesar varios archivos en paralelo (RunBatchAsync), asi que
@@ -282,6 +306,7 @@ public sealed partial class ConvertViewModel : ViewModelBase
     }
 
     private bool CanStartBatch() => HasBatchFiles && !IsBatchRunning;
+    private CancellationTokenSource? _batchCts;
 
     [RelayCommand(CanExecute = nameof(CanStartBatch))]
     private async Task StartBatchAsync()
@@ -295,6 +320,9 @@ public sealed partial class ConvertViewModel : ViewModelBase
         BatchCompletedCount = 0;
         BatchFailedCount = 0;
         BatchProgressFraction = 0;
+
+        _batchCts = new CancellationTokenSource();
+        var cancellationToken = _batchCts.Token;
 
         var destinationDirectory = Path.Combine(BatchFolder, "Fragua");
         var byPath = BatchFiles.ToDictionary(f => f.FullPath, f => f);
@@ -333,41 +361,72 @@ public sealed partial class ConvertViewModel : ViewModelBase
             });
 
             var maxParallelism = Math.Max(1, Environment.ProcessorCount / 2);
-            var results = await _pipeline.RunBatchAsync(jobs, maxParallelism, progress, CancellationToken.None);
 
-            foreach (var result in results)
+            try
             {
-                if (!byPath.TryGetValue(result.Job.SourcePath, out var item))
+                var results = await _pipeline.RunBatchAsync(jobs, maxParallelism, progress, cancellationToken);
+
+                foreach (var result in results)
                 {
-                    continue;
+                    if (!byPath.TryGetValue(result.Job.SourcePath, out var item))
+                    {
+                        continue;
+                    }
+
+                    if (result.Succeeded && result.Output is not null)
+                    {
+                        item.Status = BatchFileStatus.Done;
+                        item.Detail = "Listo";
+                        BatchCompletedCount++;
+
+                        var originalSize = new FileInfo(result.Job.SourcePath).Length;
+                        AddHistoryEntry(item.FileName, originalSize, result.Output);
+                    }
+                    else
+                    {
+                        item.Status = BatchFileStatus.Failed;
+                        item.Detail = result.WasCancelled ? "Cancelado" : result.ErrorMessage;
+                        BatchFailedCount++;
+                    }
                 }
 
-                if (result.Succeeded && result.Output is not null)
+                BatchProgressFraction = 1;
+            }
+            catch (OperationCanceledException)
+            {
+                // A diferencia de un archivo que falla, cancelar el lote
+                // entero corta Parallel.ForEachAsync con una excepcion (no
+                // devuelve resultados parciales). Lo que ya estaba "Listo"
+                // se queda asi; el resto pasa a Cancelado, no queda como si
+                // nunca se hubiera tocado.
+                foreach (var item in BatchFiles)
                 {
-                    item.Status = BatchFileStatus.Done;
-                    item.Detail = "Listo";
-                    BatchCompletedCount++;
-
-                    var originalSize = new FileInfo(result.Job.SourcePath).Length;
-                    AddHistoryEntry(item.FileName, originalSize, result.Output);
-                }
-                else
-                {
-                    item.Status = BatchFileStatus.Failed;
-                    item.Detail = result.WasCancelled ? "Cancelado" : result.ErrorMessage;
-                    BatchFailedCount++;
+                    if (item.Status is BatchFileStatus.Pending or BatchFileStatus.Running)
+                    {
+                        item.Status = BatchFileStatus.Failed;
+                        item.Detail = "Cancelado";
+                    }
                 }
             }
-
-            BatchProgressFraction = 1;
         }
         finally
         {
             IsBatchRunning = false;
+            _batchCts?.Dispose();
+            _batchCts = null;
         }
     }
 
-    partial void OnIsBatchRunningChanged(bool value) => StartBatchCommand.NotifyCanExecuteChanged();
+    private bool CanCancelBatch() => IsBatchRunning;
+
+    [RelayCommand(CanExecute = nameof(CanCancelBatch))]
+    private void CancelBatch() => _batchCts?.Cancel();
+
+    partial void OnIsBatchRunningChanged(bool value)
+    {
+        StartBatchCommand.NotifyCanExecuteChanged();
+        CancelBatchCommand.NotifyCanExecuteChanged();
+    }
 
     // --- Historial de la sesion actual. Sin persistencia en disco todavia
     // (SQLite llega en fase 1, mismo criterio que ForgeMD); esto es el
@@ -389,5 +448,17 @@ public sealed partial class ConvertViewModel : ViewModelBase
     {
         History.Clear();
         OnPropertyChanged(nameof(HasHistory));
+    }
+
+    /// <summary>
+    /// Si la ventana se cierra a mitad de una conversion o un lote, el token
+    /// de cancelacion no puede quedar huerfano.
+    /// </summary>
+    public void Dispose()
+    {
+        _convertCts?.Cancel();
+        _convertCts?.Dispose();
+        _batchCts?.Cancel();
+        _batchCts?.Dispose();
     }
 }

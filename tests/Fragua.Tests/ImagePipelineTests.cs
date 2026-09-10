@@ -127,4 +127,25 @@ public class ImagePipelineTests
 
         Assert.True(maxObserved <= 2, $"Se observaron {maxObserved} trabajos concurrentes, el limite era 2.");
     }
+
+    [Fact]
+    public async Task RunBatchAsync_al_cancelar_lanza_OperationCanceledException()
+    {
+        // A diferencia de RunAsync (que atrapa la cancelacion de un solo
+        // trabajo y devuelve WasCancelled), Parallel.ForEachAsync observa el
+        // token el mismo y relanza si se cancela el lote entero. Quien llama
+        // a RunBatchAsync tiene que envolver la espera en try/catch, no
+        // esperar un resultado con items marcados Cancelled.
+        var hangs = new FakeOperation("cuelga", waitForCancellation: true);
+        var pipeline = new ImagePipeline(new FakeLoader());
+        var jobs = Enumerable.Range(0, 4)
+            .Select(i => new ImageJob($"foto{i}.png", "salida", [hangs]))
+            .ToArray();
+
+        using var cts = new CancellationTokenSource();
+        cts.CancelAfter(TimeSpan.FromMilliseconds(20));
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => pipeline.RunBatchAsync(jobs, maxDegreeOfParallelism: 2, progress: null, cts.Token));
+    }
 }

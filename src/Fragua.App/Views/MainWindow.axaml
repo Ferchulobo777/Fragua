@@ -177,8 +177,12 @@
           </StackPanel>
         </Border>
 
-        <Button Classes="primary" Content="Convertir" Command="{Binding ConvertCommand}"
-                HorizontalAlignment="Left" IsEnabled="{Binding !IsConverting}" />
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <Button Classes="primary" Content="Convertir" Command="{Binding ConvertCommand}"
+                  HorizontalAlignment="Left" IsEnabled="{Binding !IsConverting}" />
+          <Button Classes="ghost" Content="Cancelar" Command="{Binding CancelConvertCommand}"
+                  IsVisible="{Binding IsConverting}" />
+        </StackPanel>
 
         <!-- Progreso determinado: se llena segun el paso real del pipeline,
              no una animacion que finge avanzar. -->
@@ -289,9 +293,12 @@
           </StackPanel>
         </Border>
 
-        <Button Classes="primary" Content="Iniciar conversion por lotes" Command="{Binding StartBatchCommand}"
-                HorizontalAlignment="Left" IsEnabled="{Binding !IsBatchRunning}"
-                IsVisible="{Binding HasBatchFiles}" />
+        <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding HasBatchFiles}">
+          <Button Classes="primary" Content="Iniciar conversion por lotes" Command="{Binding StartBatchCommand}"
+                  HorizontalAlignment="Left" IsEnabled="{Binding !IsBatchRunning}" />
+          <Button Classes="ghost" Content="Cancelar" Command="{Binding CancelBatchCommand}"
+                  IsVisible="{Binding IsBatchRunning}" />
+        </StackPanel>
 
         <StackPanel Spacing="8" IsVisible="{Binding IsBatchRunning}" HorizontalAlignment="Stretch">
           <ProgressBar Minimum="0" Maximum="1" Value="{Binding BatchProgressFraction}"

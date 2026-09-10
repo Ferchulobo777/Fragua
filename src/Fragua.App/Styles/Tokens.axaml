@@ -36,6 +36,26 @@
 
   <SolidColorBrush x:Key="FraguaEmberBrush" Color="{StaticResource FraguaEmberColor}" />
 
+  <!-- Degrade de brasa: ambar a rojo profundo, la misma gama que la llama
+       de la marca. Se usa en la accion principal y en el progreso: son los
+       dos lugares donde "algo esta pasando ahora mismo" tiene que sentirse. -->
+  <LinearGradientBrush x:Key="FraguaEmberGradientBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+    <GradientStop Offset="0" Color="#FFD166" />
+    <GradientStop Offset="0.5" Color="#F27636" />
+    <GradientStop Offset="1" Color="#C7371A" />
+  </LinearGradientBrush>
+  <LinearGradientBrush x:Key="FraguaEmberGradientHorizontalBrush" StartPoint="0%,0%" EndPoint="100%,0%">
+    <GradientStop Offset="0" Color="#F27636" />
+    <GradientStop Offset="1" Color="#C7371A" />
+  </LinearGradientBrush>
+
+  <!-- Metal: gris ceniza con un highlight superior sutil, para paneles que
+       quieran leerse como forjados en vez de solo planos. Uso puntual. -->
+  <LinearGradientBrush x:Key="FraguaMetalBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+    <GradientStop Offset="0" Color="#3A3A3A" />
+    <GradientStop Offset="1" Color="#242424" />
+  </LinearGradientBrush>
+
   <!-- FluentTheme colorea checkboxes, radios y selecciones con su acento por
        defecto (un rosa/violeta de sistema). Se pisa con el unico acento real
        de Fragua para no romper la regla de "un solo color, y es brasa". -->

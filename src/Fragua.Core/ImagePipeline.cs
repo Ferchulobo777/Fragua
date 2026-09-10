@@ -71,16 +71,23 @@ public sealed class ImagePipeline
     {
         try
         {
-            progress?.Report(new ImageJobProgress(job.SourcePath, "Cargando", completedJobs, totalJobs));
+            // +1 por el paso de carga, para que la barra determinada nunca
+            // arranque ya en el ultimo tramo cuando hay una sola operacion.
+            var totalSteps = job.Operations.Count + 1;
+
+            progress?.Report(new ImageJobProgress(job.SourcePath, "Cargando", completedJobs, totalJobs, 0, totalSteps));
             var asset = await _loader.LoadAsync(job.SourcePath, cancellationToken).ConfigureAwait(false);
 
+            var stepIndex = 1;
             foreach (var operation in job.Operations)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                progress?.Report(new ImageJobProgress(job.SourcePath, operation.DisplayName, completedJobs, totalJobs));
+                progress?.Report(new ImageJobProgress(job.SourcePath, operation.DisplayName, completedJobs, totalJobs, stepIndex, totalSteps));
                 asset = await operation.ApplyAsync(asset, cancellationToken).ConfigureAwait(false);
+                stepIndex++;
             }
 
+            progress?.Report(new ImageJobProgress(job.SourcePath, "Listo", completedJobs, totalJobs, totalSteps, totalSteps));
             return ImageJobResult.Success(job, asset);
         }
         catch (OperationCanceledException)

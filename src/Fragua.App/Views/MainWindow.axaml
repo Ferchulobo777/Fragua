@@ -15,15 +15,18 @@
 
   <Window.Resources>
     <conv:ByteSizeConverter x:Key="ByteSize" />
+    <conv:PercentConverter x:Key="Percent" />
     <conv:BoolToBrushConverter x:Key="StatusBrush"
                                TrueBrush="{StaticResource FraguaErrorBrush}"
+                               FalseBrush="{StaticResource FraguaTextMutedBrush}" />
+    <conv:BoolToBrushConverter x:Key="NavIconBrush"
+                               TrueBrush="{StaticResource FraguaEmberBrush}"
                                FalseBrush="{StaticResource FraguaTextMutedBrush}" />
   </Window.Resources>
 
   <Grid ColumnDefinitions="220,*" Background="{DynamicResource FraguaCanvasBrush}">
 
-    <!-- Barra lateral: una sola pantalla en fase 0, pero la estructura ya
-         deja lugar a Lotes, Historial y Ajustes de las fases siguientes. -->
+    <!-- Barra lateral -->
     <Border Grid.Column="0" Background="{DynamicResource FraguaPanelBrush}"
             BorderBrush="{DynamicResource FraguaLineBrush}" BorderThickness="0,0,1,0">
       <Grid RowDefinitions="Auto,*,Auto" Margin="16,20">
@@ -35,18 +38,20 @@
         </StackPanel>
 
         <StackPanel Grid.Row="1" Spacing="2">
-          <Button Classes="nav active">
+          <Button Classes.active="{Binding IsConvertTab}" Classes="nav"
+                  Command="{Binding GoToTabCommand}" CommandParameter="{x:Static vm:AppTab.Convert}">
             <StackPanel Orientation="Horizontal" Spacing="10">
               <Canvas Width="16" Height="16" VerticalAlignment="Center">
                 <Path Data="M2 5h9M8 2l3 3-3 3M14 11H5M8 14l-3-3 3-3"
-                      Stroke="{DynamicResource FraguaEmberBrush}" StrokeThickness="1.6"
+                      Stroke="{Binding IsConvertTab, Converter={StaticResource NavIconBrush}}" StrokeThickness="1.6"
                       StrokeLineCap="Round" StrokeJoin="Round" />
               </Canvas>
               <TextBlock Text="Convertir" FontWeight="Medium" VerticalAlignment="Center" />
             </StackPanel>
           </Button>
 
-          <Button Classes="nav" IsEnabled="False">
+          <Button Classes.active="{Binding IsBatchTab}" Classes="nav"
+                  Command="{Binding GoToTabCommand}" CommandParameter="{x:Static vm:AppTab.Batch}">
             <StackPanel Orientation="Horizontal" Spacing="10">
               <Canvas Width="16" Height="16" VerticalAlignment="Center">
                 <Rectangle Canvas.Left="2" Canvas.Top="2" Width="12" Height="2" RadiusX="1" RadiusY="1"
@@ -60,7 +65,8 @@
             </StackPanel>
           </Button>
 
-          <Button Classes="nav" IsEnabled="False">
+          <Button Classes.active="{Binding IsHistoryTab}" Classes="nav"
+                  Command="{Binding GoToTabCommand}" CommandParameter="{x:Static vm:AppTab.History}">
             <StackPanel Orientation="Horizontal" Spacing="10">
               <Canvas Width="16" Height="16" VerticalAlignment="Center">
                 <Ellipse Canvas.Left="1" Canvas.Top="1" Width="14" Height="14"
@@ -72,17 +78,16 @@
             </StackPanel>
           </Button>
 
-          <Button Classes="nav" IsEnabled="False">
+          <Button Classes.active="{Binding IsAboutTab}" Classes="nav"
+                  Command="{Binding GoToTabCommand}" CommandParameter="{x:Static vm:AppTab.About}">
             <StackPanel Orientation="Horizontal" Spacing="10">
               <Canvas Width="16" Height="16" VerticalAlignment="Center">
-                <Line StartPoint="2,4" EndPoint="14,4" Stroke="{DynamicResource FraguaTextMutedBrush}" StrokeThickness="1.4" />
-                <Ellipse Canvas.Left="7.5" Canvas.Top="2.5" Width="3" Height="3" Fill="{DynamicResource FraguaTextMutedBrush}" />
-                <Line StartPoint="2,8" EndPoint="14,8" Stroke="{DynamicResource FraguaTextMutedBrush}" StrokeThickness="1.4" />
-                <Ellipse Canvas.Left="3.5" Canvas.Top="6.5" Width="3" Height="3" Fill="{DynamicResource FraguaTextMutedBrush}" />
-                <Line StartPoint="2,12" EndPoint="14,12" Stroke="{DynamicResource FraguaTextMutedBrush}" StrokeThickness="1.4" />
-                <Ellipse Canvas.Left="10" Canvas.Top="10.5" Width="3" Height="3" Fill="{DynamicResource FraguaTextMutedBrush}" />
+                <Ellipse Canvas.Left="1" Canvas.Top="1" Width="14" Height="14"
+                         Stroke="{DynamicResource FraguaTextMutedBrush}" StrokeThickness="1.4" />
+                <Line StartPoint="8,7" EndPoint="8,11.5" Stroke="{DynamicResource FraguaTextMutedBrush}" StrokeThickness="1.4" StrokeLineCap="Round" />
+                <Ellipse Canvas.Left="7.3" Canvas.Top="4.3" Width="1.4" Height="1.4" Fill="{DynamicResource FraguaTextMutedBrush}" />
               </Canvas>
-              <TextBlock Text="Ajustes" VerticalAlignment="Center" />
+              <TextBlock Text="Acerca de" VerticalAlignment="Center" />
             </StackPanel>
           </Button>
         </StackPanel>
@@ -94,7 +99,11 @@
 
     <!-- Zona de trabajo -->
     <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Disabled">
-      <StackPanel Margin="32,28" Spacing="20" MaxWidth="640" HorizontalAlignment="Center">
+     <Grid>
+
+      <!-- Pestana Convertir -->
+      <StackPanel Margin="32,28" Spacing="20" MaxWidth="640" HorizontalAlignment="Center"
+                  IsVisible="{Binding IsConvertTab}">
 
         <StackPanel Spacing="4">
           <TextBlock Text="Convertir" Classes="heading" />
@@ -102,7 +111,6 @@
                      Classes="muted" />
         </StackPanel>
 
-        <!-- Zona de soltar / archivo actual -->
         <Border x:Name="DropZone" Classes="dropzone" Padding="24" MinHeight="140">
           <Grid ColumnDefinitions="*,Auto">
             <StackPanel Grid.Column="0" Spacing="10" IsVisible="{Binding !HasSource}"
@@ -136,7 +144,6 @@
           </Grid>
         </Border>
 
-        <!-- Pipeline: en fase 0 son dos pasos fijos, redimensionar y convertir. -->
         <Border Classes="panel" Padding="20">
           <StackPanel Spacing="18">
 
@@ -171,9 +178,23 @@
         <Button Classes="primary" Content="Convertir" Command="{Binding ConvertCommand}"
                 HorizontalAlignment="Left" IsEnabled="{Binding !IsConverting}" />
 
-        <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsConverting}" />
+        <!-- Progreso determinado: se llena segun el paso real del pipeline,
+             no una animacion que finge avanzar. -->
+        <StackPanel Spacing="6" IsVisible="{Binding IsConverting}">
+          <ProgressBar Minimum="0" Maximum="1" Value="{Binding ProgressFraction}">
+            <ProgressBar.Transitions>
+              <Transitions>
+                <DoubleTransition Property="Value" Duration="0:0:0.25" Easing="CubicEaseOut" />
+              </Transitions>
+            </ProgressBar.Transitions>
+          </ProgressBar>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Text="{Binding ProgressStepName}" Classes="muted" />
+            <TextBlock Text="{Binding ProgressFraction, Converter={StaticResource Percent}}"
+                       Classes="muted" FontFamily="{DynamicResource FontMono}" />
+          </StackPanel>
+        </StackPanel>
 
-        <!-- El dato que el usuario vino a buscar: peso y dimensiones, antes y despues. -->
         <Border Classes="panel" Padding="20" IsVisible="{Binding HasResult}">
           <Grid ColumnDefinitions="*,Auto,*">
             <StackPanel Grid.Column="0" Spacing="4">
@@ -210,6 +231,89 @@
                    FontSize="{DynamicResource TextSm}" />
 
       </StackPanel>
+
+      <!-- Pestana Lotes: fase 1, todavia no implementada. Estado explicito
+           en vez de un boton muerto sin explicacion. -->
+      <StackPanel Margin="32,28" Spacing="16" MaxWidth="640" HorizontalAlignment="Center"
+                  IsVisible="{Binding IsBatchTab}">
+        <TextBlock Text="Lotes" Classes="heading" />
+        <Border Classes="panel" Padding="28">
+          <StackPanel Spacing="10" HorizontalAlignment="Center">
+            <Canvas Width="28" Height="28" HorizontalAlignment="Center">
+              <Rectangle Canvas.Left="4" Canvas.Top="5" Width="20" Height="4" RadiusX="1.5" RadiusY="1.5" Fill="{DynamicResource FraguaTextMutedBrush}" />
+              <Rectangle Canvas.Left="4" Canvas.Top="12" Width="20" Height="4" RadiusX="1.5" RadiusY="1.5" Fill="{DynamicResource FraguaTextMutedBrush}" Opacity="0.7" />
+              <Rectangle Canvas.Left="4" Canvas.Top="19" Width="13" Height="4" RadiusX="1.5" RadiusY="1.5" Fill="{DynamicResource FraguaEmberBrush}" Opacity="0.6" />
+            </Canvas>
+            <TextBlock Text="Todavia no esta en esta version" FontWeight="Medium" HorizontalAlignment="Center" />
+            <TextBlock Classes="muted" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"
+                       Text="La conversion de carpetas enteras con progreso y ajustes predefinidos llega en la fase 1. Convertir un archivo a la vez ya funciona completo hoy." />
+          </StackPanel>
+        </Border>
+      </StackPanel>
+
+      <StackPanel Margin="32,28" Spacing="16" MaxWidth="640" HorizontalAlignment="Center"
+                  IsVisible="{Binding IsHistoryTab}">
+        <TextBlock Text="Historial" Classes="heading" />
+        <Border Classes="panel" Padding="28">
+          <StackPanel Spacing="10" HorizontalAlignment="Center">
+            <Canvas Width="28" Height="28" HorizontalAlignment="Center">
+              <Ellipse Canvas.Left="2" Canvas.Top="2" Width="24" Height="24" Stroke="{DynamicResource FraguaTextMutedBrush}" StrokeThickness="1.6" />
+              <Path Data="M14 7v7l5 3" Stroke="{DynamicResource FraguaEmberBrush}" StrokeThickness="1.6" StrokeLineCap="Round" StrokeJoin="Round" />
+            </Canvas>
+            <TextBlock Text="Todavia no esta en esta version" FontWeight="Medium" HorizontalAlignment="Center" />
+            <TextBlock Classes="muted" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"
+                       Text="El registro persistente de conversiones anteriores llega en la fase 1, junto con lotes y ajustes predefinidos." />
+          </StackPanel>
+        </Border>
+      </StackPanel>
+
+      <!-- Acerca de: creditos y tecnologias reales, no una pantalla generica. -->
+      <StackPanel Margin="32,28" Spacing="20" MaxWidth="640" HorizontalAlignment="Center"
+                  IsVisible="{Binding IsAboutTab}">
+        <StackPanel Spacing="4">
+          <TextBlock Text="Acerca de Fragua" Classes="heading" />
+          <TextBlock Text="Imagenes listas para publicar, sin que salgan de tu maquina." Classes="muted" />
+        </StackPanel>
+
+        <Border Classes="panel" Padding="20">
+          <StackPanel Spacing="14">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <Image Source="avares://Fragua.App/Assets/Icons/fragua-32.png" Width="28" Height="28" />
+              <StackPanel Spacing="0">
+                <TextBlock Text="Fragua" FontWeight="SemiBold" />
+                <TextBlock Text="Fase 0 · v0.1" Classes="muted" />
+              </StackPanel>
+            </StackPanel>
+            <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
+            <TextBlock Text="Disenado y desarrollado por Fernando Rodriguez, 2026." TextWrapping="Wrap" />
+            <TextBlock Classes="muted" TextWrapping="Wrap"
+                       Text="Sin cuentas, sin nube, sin telemetria. El procesamiento de imagenes corre entero en esta maquina." />
+          </StackPanel>
+        </Border>
+
+        <Border Classes="panel" Padding="20">
+          <StackPanel Spacing="12">
+            <TextBlock Text="Tecnologia" Classes="eyebrow" />
+            <WrapPanel>
+              <Border Classes="techchip" Margin="0,0,8,8"><TextBlock Text="Avalonia UI" /></Border>
+              <Border Classes="techchip" Margin="0,0,8,8"><TextBlock Text=".NET 10" /></Border>
+              <Border Classes="techchip" Margin="0,0,8,8"><TextBlock Text="C#" /></Border>
+              <Border Classes="techchip" Margin="0,0,8,8"><TextBlock Text="Magick.NET" /></Border>
+              <Border Classes="techchip" Margin="0,0,8,8"><TextBlock Text="CommunityToolkit.Mvvm" /></Border>
+            </WrapPanel>
+          </StackPanel>
+        </Border>
+
+        <Border Classes="panel" Padding="20">
+          <StackPanel Spacing="6">
+            <TextBlock Text="Licencia" Classes="eyebrow" />
+            <TextBlock Classes="muted" TextWrapping="Wrap"
+                       Text="MIT. Mona Sans y Commit Mono, SIL Open Font License. Magick.NET, Apache 2.0." />
+          </StackPanel>
+        </Border>
+      </StackPanel>
+
+     </Grid>
     </ScrollViewer>
   </Grid>
 

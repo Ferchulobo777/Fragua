@@ -25,6 +25,7 @@
         <BrushTransition Property="Background" Duration="0:0:0.14" Easing="CubicEaseOut" />
         <BrushTransition Property="BorderBrush" Duration="0:0:0.14" Easing="CubicEaseOut" />
         <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.14" Easing="CubicEaseOut" />
+        <DoubleTransition Property="Opacity" Duration="0:0:0.14" Easing="CubicEaseOut" />
       </Transitions>
     </Setter>
   </Style>
@@ -41,17 +42,17 @@
   <!-- Boton primario: la unica accion en pantalla que lleva el acento brasa,
        con un resplandor suave que lo separa del resto de la superficie. -->
   <Style Selector="Button.primary">
-    <Setter Property="Background" Value="{DynamicResource FraguaEmberBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource FraguaEmberBrush}" />
+    <Setter Property="Background" Value="{DynamicResource FraguaEmberGradientHorizontalBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource FraguaEmberStrongBrush}" />
     <Setter Property="Foreground" Value="#161616" />
     <Setter Property="FontWeight" Value="SemiBold" />
     <Setter Property="Padding" Value="20,11" />
     <Setter Property="Effect">
-      <DropShadowEffect Color="#F27636" Opacity="0.35" BlurRadius="18" OffsetX="0" OffsetY="3" />
+      <DropShadowEffect Color="#F27636" Opacity="0.4" BlurRadius="20" OffsetX="0" OffsetY="4" />
     </Setter>
   </Style>
   <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource FraguaEmberStrongBrush}" />
+    <Setter Property="Opacity" Value="0.88" />
   </Style>
   <Style Selector="Button.primary:disabled">
     <Setter Property="Effect" Value="{x:Null}" />
@@ -82,11 +83,14 @@
     <Setter Property="Background" Value="{DynamicResource FraguaPanelBrush}" />
   </Style>
   <Style Selector="Button.nav.active">
-    <Setter Property="Background" Value="#242017" />
+    <Setter Property="Background" Value="#2E2118" />
+    <Setter Property="BorderBrush" Value="{DynamicResource FraguaEmberGradientBrush}" />
+    <Setter Property="BorderThickness" Value="3,0,0,0" />
+    <Setter Property="Padding" Value="8,9,10,9" />
     <Setter Property="Foreground" Value="{DynamicResource FraguaTextBrush}" />
   </Style>
   <Style Selector="Button.nav.active:pointerover /template/ ContentPresenter">
-    <Setter Property="Background" Value="#242017" />
+    <Setter Property="Background" Value="#2E2118" />
   </Style>
 
   <Style Selector="TextBox">
@@ -124,9 +128,9 @@
 
   <Style Selector="ProgressBar">
     <Setter Property="Background" Value="{DynamicResource FraguaLineBrush}" />
-    <Setter Property="Foreground" Value="{DynamicResource FraguaEmberBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource FraguaEmberGradientHorizontalBrush}" />
     <Setter Property="CornerRadius" Value="{DynamicResource RadiusPill}" />
-    <Setter Property="Height" Value="4" />
+    <Setter Property="Height" Value="6" />
   </Style>
 
   <!-- Panel elevado: tarjetas, la zona de soltar archivos, el resumen antes/despues.
@@ -180,6 +184,30 @@
     <Setter Property="FontFamily" Value="{DynamicResource FontMono}" />
     <Setter Property="FontSize" Value="{DynamicResource TextXl}" />
     <Setter Property="FontWeight" Value="Medium" />
+  </Style>
+
+  <!-- Chip de tecnologia en Acerca de: pill discreta, sin logos inventados. -->
+  <Style Selector="Border.techchip">
+    <Setter Property="Background" Value="{DynamicResource FraguaElevatedBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource FraguaLineBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{DynamicResource RadiusPill}" />
+    <Setter Property="Padding" Value="12,6" />
+  </Style>
+  <Style Selector="Border.techchip TextBlock">
+    <Setter Property="FontSize" Value="{DynamicResource TextSm}" />
+    <Setter Property="FontFamily" Value="{DynamicResource FontMono}" />
+  </Style>
+
+  <!-- Scrollbar propia: el gris de sistema por defecto no sigue la paleta. -->
+  <Style Selector="ScrollBar">
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+  <Style Selector="ScrollBar /template/ Thumb">
+    <Setter Property="Background" Value="{DynamicResource FraguaLineStrongBrush}" />
+  </Style>
+  <Style Selector="ScrollBar /template/ Thumb:pointerover">
+    <Setter Property="Background" Value="{DynamicResource FraguaEmberBrush}" />
   </Style>
 
 </Styles>

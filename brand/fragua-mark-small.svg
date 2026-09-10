@@ -1,11 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" role="img" aria-label="Fragua">
-  <!-- Version de tamano chico (16 y 24 px). Misma estructura que la marca completa
-       pero con el trazo mucho mas pesado en proporcion, que es lo unico que
-       sobrevive en la barra de tareas y en la barra de titulo. -->
-  <path d="M3 13v-3h3v-3h3"
-        stroke="currentColor" stroke-width="3"
-        stroke-linecap="butt" stroke-linejoin="miter"/>
-  <path d="M9 7c2 0 4-2 4-4"
-        stroke="currentColor" stroke-width="3"
-        stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="flame-sm" x1="8" y1="1.5" x2="8" y2="10" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFD166"/>
+      <stop offset="45%" stop-color="#F27636"/>
+      <stop offset="100%" stop-color="#C7371A"/>
+    </linearGradient>
+    <linearGradient id="anvil-sm" x1="2" y1="9" x2="14.5" y2="13" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#C4C4C4"/>
+      <stop offset="100%" stop-color="#666666"/>
+    </linearGradient>
+  </defs>
+  <path d="M3 10.5h4l.8-1h3.4l1.2 1h1.6v1H3z" fill="url(#anvil-sm)"/>
+  <path d="M6.5 11.5h3v1.3c0 .4-.3.7-.7.7H7.2c-.4 0-.7-.3-.7-.7z" fill="url(#anvil-sm)"/>
+  <path d="M8 2.2c.7 2 2.4 3.1 2.4 5.1 0 1.6-1.1 2.9-2.5 2.9S5.4 8.9 5.4 7.3c0-.9.4-1.6.9-2.2.1.5.3.9.7 1.1-.1-1.4.3-2.8 1-4z" fill="url(#flame-sm)"/>
 </svg>

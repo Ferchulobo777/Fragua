@@ -51,6 +51,12 @@ public sealed partial class ConvertViewModel : ViewModelBase
     private bool _isConverting;
 
     [ObservableProperty]
+    private double _progressFraction;
+
+    [ObservableProperty]
+    private string _progressStepName = "";
+
+    [ObservableProperty]
     private string? _statusMessage;
 
     [ObservableProperty]
@@ -65,6 +71,25 @@ public sealed partial class ConvertViewModel : ViewModelBase
     public bool HasSource => SourceAsset is not null;
     public bool HasResult => ResultAsset is not null;
     public bool IsPercentageMode => ResizeMode == ResizeMode.Percentage;
+
+    [ObservableProperty]
+    private AppTab _activeTab = AppTab.Convert;
+
+    public bool IsConvertTab => ActiveTab == AppTab.Convert;
+    public bool IsBatchTab => ActiveTab == AppTab.Batch;
+    public bool IsHistoryTab => ActiveTab == AppTab.History;
+    public bool IsAboutTab => ActiveTab == AppTab.About;
+
+    partial void OnActiveTabChanged(AppTab value)
+    {
+        OnPropertyChanged(nameof(IsConvertTab));
+        OnPropertyChanged(nameof(IsBatchTab));
+        OnPropertyChanged(nameof(IsHistoryTab));
+        OnPropertyChanged(nameof(IsAboutTab));
+    }
+
+    [RelayCommand]
+    private void GoToTab(AppTab tab) => ActiveTab = tab;
 
     partial void OnResizeModeChanged(ResizeMode value) => OnPropertyChanged(nameof(IsPercentageMode));
 
@@ -99,6 +124,8 @@ public sealed partial class ConvertViewModel : ViewModelBase
         IsConverting = true;
         StatusMessage = "Procesando...";
         LastRunFailed = false;
+        ProgressFraction = 0;
+        ProgressStepName = "Cargando";
 
         try
         {
@@ -120,10 +147,16 @@ public sealed partial class ConvertViewModel : ViewModelBase
             operations.Add(new ConvertFormatOperation(_writer, destinationDirectory, TargetFormat));
 
             var job = new ImageJob(SourcePath, destinationDirectory, operations);
-            var result = await _pipeline.RunAsync(job, progress: null, CancellationToken.None);
+            var progress = new Progress<ImageJobProgress>(p =>
+            {
+                ProgressFraction = p.StepFraction;
+                ProgressStepName = p.CurrentStepName;
+            });
+            var result = await _pipeline.RunAsync(job, progress, CancellationToken.None);
 
             if (result.Succeeded)
             {
+                ProgressFraction = 1;
                 ResultAsset = result.Output;
                 StatusMessage = $"Listo. Guardado en {destinationDirectory}";
             }

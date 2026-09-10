@@ -3,7 +3,7 @@
 ; .NET instalado.
 
 #define MyAppName "Fragua"
-#define MyAppVersion "0.1.0"
+#define MyAppVersion "0.2.0"
 #define MyAppPublisher "Fernando Rodriguez"
 #define MyAppURL "https://github.com/Ferchulobo777/Fragua"
 #define MyAppExeName "Fragua.App.exe"

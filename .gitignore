@@ -19,6 +19,13 @@ models/*.onnx
 
 # Salidas del generador de iconos
 brand/out/
+brand/real-logo/out/
+brand/real-logo/*-check.png
+
+# Arte de referencia entregado por Fernando en el chat: se procesa hacia
+# brand/real-logo/, el original no se commitea (es material de trabajo,
+# no un asset versionado).
+/*.png
 
 # Instaladores
 dist/

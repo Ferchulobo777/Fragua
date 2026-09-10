@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Threading.Channels;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Fragua.App.Models;
@@ -33,6 +34,37 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
 
     [ObservableProperty]
     private ImageAsset? _resultAsset;
+
+    [ObservableProperty]
+    private Bitmap? _sourcePreview;
+
+    [ObservableProperty]
+    private Bitmap? _resultPreview;
+
+    public bool HasSourcePreview => SourcePreview is not null;
+    public bool HasResultPreview => ResultPreview is not null;
+
+    partial void OnSourcePreviewChanged(Bitmap? value) => OnPropertyChanged(nameof(HasSourcePreview));
+    partial void OnResultPreviewChanged(Bitmap? value) => OnPropertyChanged(nameof(HasResultPreview));
+
+    /// <summary>
+    /// Decodifica una miniatura para mostrar en pantalla. Puede fallar en
+    /// formatos que Magick.NET lee pero el decodificador de bitmaps de
+    /// Avalonia no soporta (algunos TIFF, AVIF segun plataforma); en ese
+    /// caso la vista se queda con el texto de la ruta, no rompe nada.
+    /// </summary>
+    private static Bitmap? TryLoadPreview(string path)
+    {
+        try
+        {
+            using var stream = File.OpenRead(path);
+            return new Bitmap(stream);
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
     [ObservableProperty]
     private bool _resizeEnabled = true;
@@ -121,7 +153,15 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         ResultAsset = null;
         StatusMessage = null;
         LastRunFailed = false;
+
+        SourcePreview?.Dispose();
+        SourcePreview = TryLoadPreview(path);
+
+        ResultPreview?.Dispose();
+        ResultPreview = null;
     }
+
+    private static readonly TimeSpan MinVisibleDuration = TimeSpan.FromMilliseconds(900);
 
     private CancellationTokenSource? _convertCts;
 
@@ -141,6 +181,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
 
         _convertCts = new CancellationTokenSource();
         var cancellationToken = _convertCts.Token;
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
         try
         {
@@ -178,10 +219,30 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
             channel.Writer.Complete();
             await drainTask;
 
+            // Con una imagen chica y una sola operacion, el pipeline entero
+            // puede terminar en menos tiempo del que dura un parpadeo. El
+            // trabajo real ya esta hecho a esta altura; esto solo evita que
+            // la barra desaparezca antes de que el ojo la registre.
+            var remaining = MinVisibleDuration - stopwatch.Elapsed;
+            if (remaining > TimeSpan.Zero && !cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    await Task.Delay(remaining, cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Se cancelo durante la espera de cierre; no cambia el
+                    // resultado ya calculado.
+                }
+            }
+
             if (result.Succeeded && result.Output is not null)
             {
                 ProgressFraction = 1;
                 ResultAsset = result.Output;
+                ResultPreview?.Dispose();
+                ResultPreview = TryLoadPreview(result.Output.SourcePath);
                 StatusMessage = $"Listo. Guardado en {destinationDirectory}";
                 AddHistoryEntry(Path.GetFileName(SourcePath), SourceAsset.SizeBytes, result.Output);
             }
@@ -468,5 +529,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         _convertCts?.Dispose();
         _batchCts?.Cancel();
         _batchCts?.Dispose();
+        SourcePreview?.Dispose();
+        ResultPreview?.Dispose();
     }
 }

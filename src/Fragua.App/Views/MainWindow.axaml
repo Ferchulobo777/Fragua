@@ -33,10 +33,10 @@
             BorderBrush="{DynamicResource FraguaLineBrush}" BorderThickness="0,0,1,0">
       <Grid RowDefinitions="Auto,*,Auto" Margin="16,20">
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="6,0,0,30">
-          <Image Source="avares://Fragua.App/Assets/Icons/fragua-32.png" Width="24" Height="24" />
-          <TextBlock Text="Fragua" FontSize="{DynamicResource TextLg}" FontWeight="SemiBold"
-                     VerticalAlignment="Center" LetterSpacing="-0.1" />
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12" Margin="6,0,0,30">
+          <Image Source="avares://Fragua.App/Assets/Icons/fragua-32.png" Width="32" Height="32" />
+          <TextBlock Text="Fragua" FontSize="{DynamicResource Text2xl}" FontWeight="Bold"
+                     VerticalAlignment="Center" LetterSpacing="-0.2" />
         </StackPanel>
 
         <StackPanel Grid.Row="1" Spacing="2">
@@ -104,7 +104,7 @@
      <Grid>
 
       <!-- Pestana Convertir -->
-      <StackPanel Margin="32,28" Spacing="20" MaxWidth="960" HorizontalAlignment="Center"
+      <StackPanel Margin="32,28" Spacing="20" HorizontalAlignment="Stretch"
                   IsVisible="{Binding IsConvertTab}">
 
         <StackPanel Spacing="4">
@@ -114,8 +114,8 @@
         </StackPanel>
 
         <Border x:Name="DropZone" Classes="dropzone" Padding="24" MinHeight="140">
-          <Grid ColumnDefinitions="*,Auto">
-            <StackPanel Grid.Column="0" Spacing="10" IsVisible="{Binding !HasSource}"
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <StackPanel Grid.Column="0" Grid.ColumnSpan="3" Spacing="10" IsVisible="{Binding !HasSource}"
                         HorizontalAlignment="Center" VerticalAlignment="Center">
               <Canvas Width="30" Height="30" HorizontalAlignment="Center">
                 <Path Data="M15 22V9M9.5 14.5 15 9l5.5 5.5M6 24h18"
@@ -126,9 +126,17 @@
               <TextBlock Text="o hace clic para elegirla" Classes="muted" HorizontalAlignment="Center" />
             </StackPanel>
 
-            <StackPanel Grid.Column="0" Spacing="4" IsVisible="{Binding HasSource}"
-                        VerticalAlignment="Center">
-              <TextBlock Text="{Binding SourcePath}" TextTrimming="CharacterEllipsis" />
+            <!-- Miniatura real, no solo la ruta como texto. -->
+            <Border Grid.Column="0" Width="96" Height="96" CornerRadius="{DynamicResource RadiusMd}"
+                    Background="{DynamicResource FraguaFieldBrush}" ClipToBounds="True"
+                    IsVisible="{Binding HasSource}" Margin="0,0,18,0">
+              <Image Source="{Binding SourcePreview}" Stretch="UniformToFill" IsVisible="{Binding HasSourcePreview}" />
+            </Border>
+
+            <StackPanel Grid.Column="1" Spacing="6" IsVisible="{Binding HasSource}"
+                        VerticalAlignment="Center" MinWidth="0">
+              <TextBlock Text="{Binding SourcePath}" TextTrimming="CharacterEllipsis"
+                         MaxLines="1" FontWeight="Medium" />
               <StackPanel Orientation="Horizontal" Spacing="12">
                 <TextBlock Classes="muted">
                   <Run Text="{Binding SourceAsset.WidthPixels}" />
@@ -141,7 +149,7 @@
               </StackPanel>
             </StackPanel>
 
-            <Button Grid.Column="1" Classes="ghost" Content="Elegir..." Click="OnBrowseClick"
+            <Button Grid.Column="2" Classes="ghost" Content="Elegir..." Click="OnBrowseClick"
                     VerticalAlignment="Center" />
           </Grid>
         </Border>
@@ -217,30 +225,43 @@
 
         <Border Classes="panel" Padding="20" IsVisible="{Binding HasResult}">
           <Grid ColumnDefinitions="*,Auto,*">
-            <StackPanel Grid.Column="0" Spacing="4">
-              <TextBlock Text="Antes" Classes="eyebrow" />
-              <TextBlock Classes="figure"
-                         Text="{Binding SourceAsset.SizeBytes, Converter={StaticResource ByteSize}}" />
-              <TextBlock Classes="muted">
-                <Run Text="{Binding SourceAsset.WidthPixels}" />
-                <Run Text="×" />
-                <Run Text="{Binding SourceAsset.HeightPixels}" />
-              </TextBlock>
+            <StackPanel Grid.Column="0" Spacing="10">
+              <Border Width="120" Height="90" CornerRadius="{DynamicResource RadiusSm}"
+                      Background="{DynamicResource FraguaFieldBrush}" ClipToBounds="True">
+                <Image Source="{Binding SourcePreview}" Stretch="UniformToFill" IsVisible="{Binding HasSourcePreview}" />
+              </Border>
+              <StackPanel Spacing="4">
+                <TextBlock Text="Antes" Classes="eyebrow" />
+                <TextBlock Classes="figure"
+                           Text="{Binding SourceAsset.SizeBytes, Converter={StaticResource ByteSize}}" />
+                <TextBlock Classes="muted">
+                  <Run Text="{Binding SourceAsset.WidthPixels}" />
+                  <Run Text="×" />
+                  <Run Text="{Binding SourceAsset.HeightPixels}" />
+                </TextBlock>
+              </StackPanel>
             </StackPanel>
 
             <TextBlock Grid.Column="1" Text="→" VerticalAlignment="Center" Margin="20,0"
                        Foreground="{DynamicResource FraguaEmberBrush}" FontSize="{DynamicResource TextXl}" />
 
-            <StackPanel Grid.Column="2" Spacing="4" HorizontalAlignment="Right">
-              <TextBlock Text="Despues" Classes="eyebrow" HorizontalAlignment="Right" />
-              <TextBlock Classes="figure" HorizontalAlignment="Right"
-                         Foreground="{DynamicResource FraguaEmberBrush}"
-                         Text="{Binding ResultAsset.SizeBytes, Converter={StaticResource ByteSize}}" />
-              <TextBlock Classes="muted" HorizontalAlignment="Right">
-                <Run Text="{Binding ResultAsset.WidthPixels}" />
-                <Run Text="×" />
-                <Run Text="{Binding ResultAsset.HeightPixels}" />
-              </TextBlock>
+            <StackPanel Grid.Column="2" Spacing="10" HorizontalAlignment="Right">
+              <Border Width="120" Height="90" CornerRadius="{DynamicResource RadiusSm}"
+                      Background="{DynamicResource FraguaFieldBrush}" ClipToBounds="True"
+                      BorderBrush="{DynamicResource FraguaEmberBrush}" BorderThickness="1.5">
+                <Image Source="{Binding ResultPreview}" Stretch="UniformToFill" IsVisible="{Binding HasResultPreview}" />
+              </Border>
+              <StackPanel Spacing="4" HorizontalAlignment="Right">
+                <TextBlock Text="Despues" Classes="eyebrow" HorizontalAlignment="Right" />
+                <TextBlock Classes="figure" HorizontalAlignment="Right"
+                           Foreground="{DynamicResource FraguaEmberBrush}"
+                           Text="{Binding ResultAsset.SizeBytes, Converter={StaticResource ByteSize}}" />
+                <TextBlock Classes="muted" HorizontalAlignment="Right">
+                  <Run Text="{Binding ResultAsset.WidthPixels}" />
+                  <Run Text="×" />
+                  <Run Text="{Binding ResultAsset.HeightPixels}" />
+                </TextBlock>
+              </StackPanel>
             </StackPanel>
           </Grid>
         </Border>
@@ -255,7 +276,7 @@
       <!-- Pestana Lotes: convierte todos los archivos de una carpeta con el
            mismo ajuste de redimension y formato de la pestana Convertir,
            corriendo sobre el mismo pipeline probado (RunBatchAsync). -->
-      <StackPanel Margin="32,28" Spacing="20" MaxWidth="960" HorizontalAlignment="Center"
+      <StackPanel Margin="32,28" Spacing="20" HorizontalAlignment="Stretch"
                   IsVisible="{Binding IsBatchTab}">
 
         <StackPanel Spacing="4">
@@ -372,14 +393,14 @@
 
       </StackPanel>
 
-      <StackPanel Margin="32,28" Spacing="20" MaxWidth="960" HorizontalAlignment="Center"
+      <StackPanel Margin="32,28" Spacing="20" HorizontalAlignment="Stretch"
                   IsVisible="{Binding IsHistoryTab}">
         <Grid ColumnDefinitions="*,Auto">
           <StackPanel Grid.Column="0" Spacing="4">
             <TextBlock Text="Historial" Classes="heading" />
             <TextBlock Classes="muted" Text="Lo que se convirtio en esta sesion. Todavia no queda guardado al cerrar la app." />
           </StackPanel>
-          <Button Grid.Column="1" Classes="ghost" Content="Limpiar historial" Command="{Binding ClearHistoryCommand}"
+          <Button Grid.Column="1" Classes="accent-outline" Content="Limpiar historial" Command="{Binding ClearHistoryCommand}"
                   IsVisible="{Binding HasHistory}" VerticalAlignment="Top" />
         </Grid>
 
@@ -418,21 +439,19 @@
       </StackPanel>
 
       <!-- Acerca de: creditos y tecnologias reales, no una pantalla generica. -->
-      <StackPanel Margin="32,28" Spacing="20" MaxWidth="960" HorizontalAlignment="Center"
+      <StackPanel Margin="32,28" Spacing="20" HorizontalAlignment="Stretch"
                   IsVisible="{Binding IsAboutTab}">
         <StackPanel Spacing="4">
           <TextBlock Text="Acerca de Fragua" Classes="heading" />
           <TextBlock Text="Imagenes listas para publicar, sin que salgan de tu maquina." Classes="muted" />
         </StackPanel>
 
-        <Border Classes="panel" Padding="20">
-          <StackPanel Spacing="14">
-            <StackPanel Orientation="Horizontal" Spacing="10">
-              <Image Source="avares://Fragua.App/Assets/Icons/fragua-32.png" Width="28" Height="28" />
-              <StackPanel Spacing="0">
-                <TextBlock Text="Fragua" FontWeight="SemiBold" />
-                <TextBlock Text="Fase 0 · v0.1" Classes="muted" />
-              </StackPanel>
+        <Border Classes="panel" Padding="28">
+          <StackPanel Spacing="18">
+            <StackPanel Orientation="Horizontal" Spacing="20">
+              <Image Source="avares://Fragua.App/Assets/Icons/fragua-lockup.png" Width="140"
+                     HorizontalAlignment="Left" />
+              <TextBlock Text="Fase 0 · v0.1" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
             </StackPanel>
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
             <TextBlock Text="Disenado y desarrollado por Fernando Rodriguez, 2026." TextWrapping="Wrap" />

@@ -67,6 +67,21 @@
     <Setter Property="Background" Value="{DynamicResource FraguaElevatedBrush}" />
   </Style>
 
+  <!-- Accion secundaria que igual necesita destacar (limpiar historial,
+       cancelar): borde en degrade de brasa en vez de relleno solido, para
+       no competir con el boton primario pero sin perderse en el fondo. -->
+  <Style Selector="Button.accent-outline">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="{DynamicResource FraguaEmberGradientHorizontalBrush}" />
+    <Setter Property="BorderThickness" Value="1.5" />
+    <Setter Property="Foreground" Value="{DynamicResource FraguaEmberBrush}" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="Padding" Value="14,9" />
+  </Style>
+  <Style Selector="Button.accent-outline:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#332018" />
+  </Style>
+
   <!-- Item de navegacion: icono + etiqueta, con el estado activo marcado por
        una pastilla de fondo y un filo brasa a la izquierda, no solo color de texto. -->
   <Style Selector="Button.nav">

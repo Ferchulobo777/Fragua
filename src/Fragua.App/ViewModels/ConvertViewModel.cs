@@ -231,8 +231,10 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     private bool _lastRunFailed;
 
+    // Svg queda afuera: es la salida de Vectorizar, no un formato al que se
+    // pueda convertir desde el selector de "Formato de salida".
     public ObservableCollection<ImageFormat> AvailableFormats { get; } =
-        new(Enum.GetValues<ImageFormat>());
+        new(Enum.GetValues<ImageFormat>().Where(f => f != ImageFormat.Svg));
 
     public ObservableCollection<ResizeMode> AvailableResizeModes { get; } =
         new(Enum.GetValues<ResizeMode>());

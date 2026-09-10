@@ -33,6 +33,7 @@ public partial class App : Application
             {
                 DataContext = Services.GetRequiredService<ConvertViewModel>(),
             };
+            desktop.Exit += (_, _) => Services.Dispose();
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -46,6 +47,10 @@ public partial class App : Application
         services.AddSingleton<IImageResizer, MagickImageResizer>();
         services.AddSingleton<IImageAssetWriter, MagickImageAssetWriter>();
         services.AddSingleton<ImagePipeline>();
+        services.AddSingleton<HttpClient>();
+        services.AddSingleton<SiluetaModelProvider>();
+        services.AddSingleton<IBackgroundRemover>(sp =>
+            new OnnxBackgroundRemover(sp.GetRequiredService<SiluetaModelProvider>().ModelPath));
         services.AddTransient<ConvertViewModel>();
 
         return services.BuildServiceProvider();

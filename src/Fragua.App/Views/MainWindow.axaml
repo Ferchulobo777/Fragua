@@ -195,6 +195,29 @@
               <TextBlock Classes="muted" Text="Calidad mas baja, archivo mas liviano. Tambien saca metadatos (EXIF, ubicacion, camara)." />
             </StackPanel>
 
+            <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
+
+            <StackPanel Spacing="10">
+              <CheckBox IsChecked="{Binding RemoveBackgroundEnabled}" Content="Quitar fondo (IA local)" />
+              <TextBlock Classes="muted" TextWrapping="Wrap"
+                         Text="Segmentacion local, sin nube. La primera vez descarga el modelo (43 MB) una sola vez." />
+
+              <StackPanel Spacing="6" IsVisible="{Binding IsDownloadingModel}">
+                <ProgressBar Minimum="0" Maximum="1" Value="{Binding ModelDownloadProgress}"
+                             HorizontalAlignment="Stretch" Height="8" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBlock Text="Descargando modelo..." />
+                  <TextBlock Text="{Binding ModelDownloadProgress, Converter={StaticResource Percent}}"
+                             FontFamily="{DynamicResource FontMono}" Foreground="{DynamicResource FraguaEmberBrush}" />
+                </StackPanel>
+              </StackPanel>
+
+              <TextBlock Classes="muted" Foreground="{DynamicResource FraguaErrorBrush}"
+                         Text="{Binding ModelDownloadError}"
+                         IsVisible="{Binding ModelDownloadError, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
+                         TextWrapping="Wrap" />
+            </StackPanel>
+
           </StackPanel>
         </Border>
 

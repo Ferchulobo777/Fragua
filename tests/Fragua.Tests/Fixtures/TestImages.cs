@@ -1,4 +1,5 @@
 using ImageMagick;
+using ImageMagick.Drawing;
 
 namespace Fragua.Tests.Fixtures;
 
@@ -44,6 +45,29 @@ internal static class TestImages
         using var pixelCollection = image.GetPixels();
         pixelCollection.SetArea(0, 0, (uint)width, (uint)height, pixels);
         image.Write(path, MagickFormat.Bmp);
+
+        return path;
+    }
+
+    /// <summary>
+    /// Un circulo solido de un color sobre un fondo solido de otro color.
+    /// El caso mas simple posible para un modelo de segmentacion; sirve
+    /// para probar que el pipeline de quitar fondo esta bien conectado de
+    /// punta a punta, no para medir calidad de segmentacion en fotos reales.
+    /// </summary>
+    public static string CreateShapeOnSolidBackground(string? directory = null)
+    {
+        var dir = directory ?? Path.Combine(Path.GetTempPath(), "fragua-tests");
+        Directory.CreateDirectory(dir);
+        var path = Path.Combine(dir, $"fixture_{Guid.NewGuid():N}.png");
+
+        const int size = 400;
+        using var image = new MagickImage(new MagickColor("#2878C8"), size, size);
+        var drawables = new Drawables()
+            .FillColor(new MagickColor("#E63C28"))
+            .Circle(size / 2.0, size / 2.0, size / 2.0, size / 4.0);
+        drawables.Draw(image);
+        image.Write(path, MagickFormat.Png);
 
         return path;
     }

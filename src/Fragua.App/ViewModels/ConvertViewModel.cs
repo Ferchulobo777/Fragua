@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using Fragua.App.Models;
 using Fragua.Core;
 using Fragua.Core.Operations;
+using Fragua.Imaging;
 
 namespace Fragua.App.ViewModels;
 
@@ -18,12 +19,21 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     private readonly ImagePipeline _pipeline;
     private readonly IImageResizer _resizer;
     private readonly IImageAssetWriter _writer;
+    private readonly IBackgroundRemover _backgroundRemover;
+    private readonly SiluetaModelProvider _modelProvider;
 
-    public ConvertViewModel(ImagePipeline pipeline, IImageResizer resizer, IImageAssetWriter writer)
+    public ConvertViewModel(
+        ImagePipeline pipeline,
+        IImageResizer resizer,
+        IImageAssetWriter writer,
+        IBackgroundRemover backgroundRemover,
+        SiluetaModelProvider modelProvider)
     {
         _pipeline = pipeline;
         _resizer = resizer;
         _writer = writer;
+        _backgroundRemover = backgroundRemover;
+        _modelProvider = modelProvider;
     }
 
     [ObservableProperty]
@@ -88,6 +98,56 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     private int _optimizeQuality = 82;
 
     private OptimizeSpec? BuildOptimizeSpec() => OptimizeEnabled ? new OptimizeSpec(OptimizeQuality) : null;
+
+    // --- Quitar fondo: fase 2 del plan, IA local (silueta.onnx, ONNX
+    // Runtime). El modelo pesa ~43MB y no va en el instalador: se baja una
+    // sola vez la primera vez que se activa el checkbox, y queda cacheado
+    // para siempre en el perfil del usuario. ---
+
+    [ObservableProperty]
+    private bool _removeBackgroundEnabled;
+
+    [ObservableProperty]
+    private bool _isDownloadingModel;
+
+    [ObservableProperty]
+    private double _modelDownloadProgress;
+
+    [ObservableProperty]
+    private string? _modelDownloadError;
+
+    public bool IsModelReady => _modelProvider.IsModelReady;
+
+    async partial void OnRemoveBackgroundEnabledChanged(bool value)
+    {
+        if (!value || IsModelReady || IsDownloadingModel)
+        {
+            return;
+        }
+
+        IsDownloadingModel = true;
+        ModelDownloadProgress = 0;
+        ModelDownloadError = null;
+
+        try
+        {
+            var progress = new Progress<double>(p => ModelDownloadProgress = p);
+            await _modelProvider.DownloadAsync(progress, CancellationToken.None);
+            OnPropertyChanged(nameof(IsModelReady));
+        }
+        catch (Exception ex) when (ex is HttpRequestException or IOException or TaskCanceledException)
+        {
+            // Sin red o el servidor no respondio: se avisa y se destilda el
+            // checkbox, no se deja la interfaz esperando algo que no va a
+            // llegar.
+            ModelDownloadError = "No se pudo descargar el modelo. Revisa la conexion e intenta de nuevo.";
+            RemoveBackgroundEnabled = false;
+        }
+        finally
+        {
+            IsDownloadingModel = false;
+        }
+    }
 
     [ObservableProperty]
     private bool _isConverting;
@@ -190,6 +250,14 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
                 "Fragua");
 
             var operations = new List<IImageOperation>();
+
+            // Primero, sobre la resolucion original: la mascara de
+            // segmentacion sale mejor cuanto mas detalle tiene la imagen
+            // que recibe.
+            if (RemoveBackgroundEnabled && IsModelReady)
+            {
+                operations.Add(new RemoveBackgroundOperation(_backgroundRemover));
+            }
 
             if (ResizeEnabled)
             {
@@ -407,6 +475,10 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
             var jobs = BatchFiles.Select(item =>
             {
                 var operations = new List<IImageOperation>();
+                if (RemoveBackgroundEnabled && IsModelReady)
+                {
+                    operations.Add(new RemoveBackgroundOperation(_backgroundRemover));
+                }
                 if (ResizeEnabled)
                 {
                     var spec = BuildResizeSpec();

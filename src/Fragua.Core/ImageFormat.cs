@@ -13,4 +13,12 @@ public enum ImageFormat
     Avif,
     Tiff,
     Bmp,
+
+    /// <summary>
+    /// Salida de Vectorizar, no de Convertir formato: no aparece en el
+    /// selector de "Formato de salida" (eso sigue siendo solo raster).
+    /// Existe aca para que ImageAsset tenga un solo tipo de resultado en
+    /// todo el pipeline, en vez de un tipo paralelo solo para vectores.
+    /// </summary>
+    Svg,
 }

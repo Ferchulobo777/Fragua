@@ -21,18 +21,21 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     private readonly IImageAssetWriter _writer;
     private readonly IBackgroundRemover _backgroundRemover;
     private readonly SiluetaModelProvider _modelProvider;
+    private readonly IImageVectorizer _vectorizer;
 
     public ConvertViewModel(
         ImagePipeline pipeline,
         IImageResizer resizer,
         IImageAssetWriter writer,
         IBackgroundRemover backgroundRemover,
-        SiluetaModelProvider modelProvider)
+        SiluetaModelProvider modelProvider,
+        IImageVectorizer vectorizer)
     {
         _pipeline = pipeline;
         _resizer = resizer;
         _writer = writer;
         _backgroundRemover = backgroundRemover;
+        _vectorizer = vectorizer;
         _modelProvider = modelProvider;
     }
 
@@ -148,6 +151,16 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
             IsDownloadingModel = false;
         }
     }
+
+    // --- Vectorizar: fase 3 del plan. Para logos y arte plano, no fotos
+    // (ver anti-alcance). Es terminal como Convertir formato: cuando esta
+    // activo reemplaza al resto de la salida raster, no se le suma. ---
+
+    [ObservableProperty]
+    private bool _vectorizeEnabled;
+
+    [ObservableProperty]
+    private int _vectorizeColors = 16;
 
     [ObservableProperty]
     private bool _isConverting;
@@ -268,7 +281,14 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
                 }
             }
 
-            operations.Add(new ConvertFormatOperation(_writer, destinationDirectory, TargetFormat, BuildOptimizeSpec()));
+            if (VectorizeEnabled)
+            {
+                operations.Add(new VectorizeOperation(_vectorizer, new VectorizeSpec(VectorizeColors), destinationDirectory));
+            }
+            else
+            {
+                operations.Add(new ConvertFormatOperation(_writer, destinationDirectory, TargetFormat, BuildOptimizeSpec()));
+            }
 
             var job = new ImageJob(SourcePath, destinationDirectory, operations);
 
@@ -487,7 +507,14 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
                         operations.Add(new ResizeOperation(_resizer, spec));
                     }
                 }
-                operations.Add(new ConvertFormatOperation(_writer, destinationDirectory, TargetFormat, BuildOptimizeSpec()));
+                if (VectorizeEnabled)
+                {
+                    operations.Add(new VectorizeOperation(_vectorizer, new VectorizeSpec(VectorizeColors), destinationDirectory));
+                }
+                else
+                {
+                    operations.Add(new ConvertFormatOperation(_writer, destinationDirectory, TargetFormat, BuildOptimizeSpec()));
+                }
                 return new ImageJob(item.FullPath, destinationDirectory, operations);
             }).ToList();
 

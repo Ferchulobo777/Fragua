@@ -176,7 +176,7 @@
 
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
 
-            <StackPanel Spacing="10">
+            <StackPanel Spacing="10" IsVisible="{Binding !VectorizeEnabled}">
               <TextBlock Text="Formato de salida" Classes="eyebrow" />
               <ComboBox ItemsSource="{Binding AvailableFormats}" SelectedItem="{Binding TargetFormat}"
                         HorizontalAlignment="Stretch" />
@@ -184,7 +184,7 @@
 
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
 
-            <StackPanel Spacing="10">
+            <StackPanel Spacing="10" IsVisible="{Binding !VectorizeEnabled}">
               <CheckBox IsChecked="{Binding OptimizeEnabled}" Content="Optimizar" />
               <Grid ColumnDefinitions="*,Auto" IsEnabled="{Binding OptimizeEnabled}">
                 <Slider Grid.Column="0" Minimum="1" Maximum="100" Value="{Binding OptimizeQuality}"
@@ -216,6 +216,20 @@
                          Text="{Binding ModelDownloadError}"
                          IsVisible="{Binding ModelDownloadError, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
                          TextWrapping="Wrap" />
+            </StackPanel>
+
+            <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
+
+            <StackPanel Spacing="10">
+              <CheckBox IsChecked="{Binding VectorizeEnabled}" Content="Vectorizar (SVG)" />
+              <Grid ColumnDefinitions="*,Auto" IsEnabled="{Binding VectorizeEnabled}">
+                <Slider Grid.Column="0" Minimum="4" Maximum="64" Value="{Binding VectorizeColors}"
+                        VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="{Binding VectorizeColors}" FontFamily="{DynamicResource FontMono}"
+                           VerticalAlignment="Center" Margin="10,0,0,0" Width="30" TextAlignment="Right" />
+              </Grid>
+              <TextBlock Classes="muted" TextWrapping="Wrap"
+                         Text="Para logos y arte plano, no fotografias. Menos colores da un SVG mas limpio. Reemplaza el formato de salida y Optimizar." />
             </StackPanel>
 
           </StackPanel>
@@ -342,7 +356,7 @@
               </Grid>
             </StackPanel>
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
-            <StackPanel Spacing="10">
+            <StackPanel Spacing="10" IsVisible="{Binding !VectorizeEnabled}">
               <TextBlock Text="Formato de salida" Classes="eyebrow" />
               <ComboBox ItemsSource="{Binding AvailableFormats}" SelectedItem="{Binding TargetFormat}"
                         HorizontalAlignment="Stretch" />
@@ -350,7 +364,7 @@
 
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
 
-            <StackPanel Spacing="10">
+            <StackPanel Spacing="10" IsVisible="{Binding !VectorizeEnabled}">
               <CheckBox IsChecked="{Binding OptimizeEnabled}" Content="Optimizar" />
               <Grid ColumnDefinitions="*,Auto" IsEnabled="{Binding OptimizeEnabled}">
                 <Slider Grid.Column="0" Minimum="1" Maximum="100" Value="{Binding OptimizeQuality}"
@@ -359,6 +373,43 @@
                            VerticalAlignment="Center" Margin="10,0,0,0" Width="30" TextAlignment="Right" />
               </Grid>
               <TextBlock Classes="muted" Text="Calidad mas baja, archivo mas liviano. Tambien saca metadatos (EXIF, ubicacion, camara)." />
+            </StackPanel>
+
+            <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
+
+            <StackPanel Spacing="10">
+              <CheckBox IsChecked="{Binding RemoveBackgroundEnabled}" Content="Quitar fondo (IA local)" />
+              <TextBlock Classes="muted" TextWrapping="Wrap"
+                         Text="Segmentacion local, sin nube. La primera vez descarga el modelo (43 MB) una sola vez." />
+
+              <StackPanel Spacing="6" IsVisible="{Binding IsDownloadingModel}">
+                <ProgressBar Minimum="0" Maximum="1" Value="{Binding ModelDownloadProgress}"
+                             HorizontalAlignment="Stretch" Height="8" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBlock Text="Descargando modelo..." />
+                  <TextBlock Text="{Binding ModelDownloadProgress, Converter={StaticResource Percent}}"
+                             FontFamily="{DynamicResource FontMono}" Foreground="{DynamicResource FraguaEmberBrush}" />
+                </StackPanel>
+              </StackPanel>
+
+              <TextBlock Classes="muted" Foreground="{DynamicResource FraguaErrorBrush}"
+                         Text="{Binding ModelDownloadError}"
+                         IsVisible="{Binding ModelDownloadError, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
+                         TextWrapping="Wrap" />
+            </StackPanel>
+
+            <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
+
+            <StackPanel Spacing="10">
+              <CheckBox IsChecked="{Binding VectorizeEnabled}" Content="Vectorizar (SVG)" />
+              <Grid ColumnDefinitions="*,Auto" IsEnabled="{Binding VectorizeEnabled}">
+                <Slider Grid.Column="0" Minimum="4" Maximum="64" Value="{Binding VectorizeColors}"
+                        VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="{Binding VectorizeColors}" FontFamily="{DynamicResource FontMono}"
+                           VerticalAlignment="Center" Margin="10,0,0,0" Width="30" TextAlignment="Right" />
+              </Grid>
+              <TextBlock Classes="muted" TextWrapping="Wrap"
+                         Text="Para logos y arte plano, no fotografias. Menos colores da un SVG mas limpio. Reemplaza el formato de salida y Optimizar." />
             </StackPanel>
           </StackPanel>
         </Border>

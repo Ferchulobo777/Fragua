@@ -1,0 +1,9 @@
+# Codigo vendorizado de MiYanni/ImageTracer.NET (The Unlicense), portado
+# para sacarle la dependencia de System.Drawing/WPF (ver ColorReference.cs
+# y Palettes/PaletteGenerator.cs, reescritos a mano; el resto es el
+# algoritmo original sin tocar). No se corrige a nuestro estilo ni pasa por
+# nuestros analizadores: mantenerlo cerca del original importa mas que
+# nuestras convenciones, por si hay que comparar contra el upstream.
+[*.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none

@@ -51,6 +51,7 @@ public partial class App : Application
         services.AddSingleton<SiluetaModelProvider>();
         services.AddSingleton<IBackgroundRemover>(sp =>
             new OnnxBackgroundRemover(sp.GetRequiredService<SiluetaModelProvider>().ModelPath));
+        services.AddSingleton<IImageVectorizer, MagickImageVectorizer>();
         services.AddTransient<ConvertViewModel>();
 
         return services.BuildServiceProvider();

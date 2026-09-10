@@ -3,6 +3,7 @@ using System.Threading.Channels;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Fragua.App.Data;
 using Fragua.App.Models;
 using Fragua.Core;
 using Fragua.Core.Operations;
@@ -11,8 +12,8 @@ using Fragua.Imaging;
 namespace Fragua.App.ViewModels;
 
 /// <summary>
-/// Fase 0 del plan: convertir y redimensionar, en una sola pasada. Nada de
-/// lotes, presets ni historial todavia (eso es fase 1).
+/// Convertir, Lotes, Historial y Acerca de: toda la interfaz corre sobre
+/// este unico ViewModel, chico a proposito para lo que es hoy la app.
 /// </summary>
 public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
 {
@@ -24,6 +25,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     private readonly IImageVectorizer _vectorizer;
     private readonly IImageUpscaler _upscaler;
     private readonly UpscaleModelProvider _upscaleModelProvider;
+    private readonly FraguaDatabase _database;
 
     public ConvertViewModel(
         ImagePipeline pipeline,
@@ -33,7 +35,8 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         SiluetaModelProvider modelProvider,
         IImageVectorizer vectorizer,
         IImageUpscaler upscaler,
-        UpscaleModelProvider upscaleModelProvider)
+        UpscaleModelProvider upscaleModelProvider,
+        FraguaDatabase database)
     {
         _pipeline = pipeline;
         _resizer = resizer;
@@ -43,6 +46,10 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         _modelProvider = modelProvider;
         _upscaler = upscaler;
         _upscaleModelProvider = upscaleModelProvider;
+        _database = database;
+
+        LoadHistoryFromDatabase();
+        LoadPresetsFromDatabase();
     }
 
     [ObservableProperty]
@@ -661,18 +668,27 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         CancelBatchCommand.NotifyCanExecuteChanged();
     }
 
-    // --- Historial de la sesion actual. Sin persistencia en disco todavia
-    // (SQLite llega en fase 1, mismo criterio que ForgeMD); esto es el
-    // registro real de "que se convirtio" mientras la app esta abierta, no
-    // una pantalla vacia con una promesa. ---
+    // --- Historial persistente (SQLite), mismo criterio que ForgeMD:
+    // sobrevive a cerrar la app, no es un log de la sesion actual. ---
 
     public ObservableCollection<HistoryEntry> History { get; } = [];
 
     public bool HasHistory => History.Count > 0;
 
+    private void LoadHistoryFromDatabase()
+    {
+        foreach (var entry in _database.LoadHistory())
+        {
+            History.Add(entry);
+        }
+        OnPropertyChanged(nameof(HasHistory));
+    }
+
     private void AddHistoryEntry(string fileName, long sizeBefore, ImageAsset output)
     {
-        History.Insert(0, new HistoryEntry(fileName, sizeBefore, output.SizeBytes, output.Format.ToString(), DateTimeOffset.Now));
+        var entry = new HistoryEntry(fileName, sizeBefore, output.SizeBytes, output.Format.ToString(), DateTimeOffset.Now);
+        History.Insert(0, entry);
+        _database.InsertHistoryEntry(entry);
         OnPropertyChanged(nameof(HasHistory));
     }
 
@@ -680,8 +696,107 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     private void ClearHistory()
     {
         History.Clear();
+        _database.ClearHistory();
         OnPropertyChanged(nameof(HasHistory));
     }
+
+    // --- Presets: una combinacion de ajustes guardada con nombre. Un
+    // preset es un pipeline guardado, sale gratis del diseno porque son
+    // los mismos campos que ya expone esta clase. ---
+
+    public ObservableCollection<string> PresetNames { get; } = [];
+
+    public bool HasPresets => PresetNames.Count > 0;
+
+    [ObservableProperty]
+    private string? _selectedPresetName;
+
+    [ObservableProperty]
+    private string _newPresetName = "";
+
+    private void LoadPresetsFromDatabase()
+    {
+        PresetNames.Clear();
+        foreach (var preset in _database.LoadPresets())
+        {
+            PresetNames.Add(preset.Name);
+        }
+        OnPropertyChanged(nameof(HasPresets));
+    }
+
+    private bool CanSavePreset() => !string.IsNullOrWhiteSpace(NewPresetName);
+
+    [RelayCommand(CanExecute = nameof(CanSavePreset))]
+    private void SavePreset()
+    {
+        var name = NewPresetName.Trim();
+        var preset = new ConversionPreset(
+            name,
+            ResizeEnabled,
+            ResizeMode.ToString(),
+            WidthText,
+            HeightText,
+            TargetFormat.ToString(),
+            OptimizeEnabled,
+            OptimizeQuality,
+            RemoveBackgroundEnabled,
+            VectorizeEnabled,
+            VectorizeColors,
+            UpscaleEnabled);
+
+        _database.SavePreset(preset);
+
+        if (!PresetNames.Contains(name))
+        {
+            PresetNames.Add(name);
+            OnPropertyChanged(nameof(HasPresets));
+        }
+
+        SelectedPresetName = name;
+        NewPresetName = "";
+    }
+
+    partial void OnSelectedPresetNameChanged(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return;
+        }
+
+        var preset = _database.LoadPresets().FirstOrDefault(p => p.Name == value);
+        if (preset is null)
+        {
+            return;
+        }
+
+        ResizeEnabled = preset.ResizeEnabled;
+        ResizeMode = Enum.Parse<ResizeMode>(preset.ResizeMode);
+        WidthText = preset.WidthText;
+        HeightText = preset.HeightText;
+        TargetFormat = Enum.Parse<ImageFormat>(preset.TargetFormat);
+        OptimizeEnabled = preset.OptimizeEnabled;
+        OptimizeQuality = preset.OptimizeQuality;
+        RemoveBackgroundEnabled = preset.RemoveBackgroundEnabled;
+        VectorizeEnabled = preset.VectorizeEnabled;
+        VectorizeColors = preset.VectorizeColors;
+        UpscaleEnabled = preset.UpscaleEnabled;
+    }
+
+    [RelayCommand]
+    private void DeleteSelectedPreset()
+    {
+        if (string.IsNullOrEmpty(SelectedPresetName))
+        {
+            return;
+        }
+
+        _database.DeletePreset(SelectedPresetName);
+        PresetNames.Remove(SelectedPresetName);
+        SelectedPresetName = null;
+        OnPropertyChanged(nameof(HasPresets));
+    }
+
+    partial void OnNewPresetNameChanged(string value) => SavePresetCommand.NotifyCanExecuteChanged();
 
     /// <summary>
     /// Si la ventana se cierra a mitad de una conversion o un lote, el token

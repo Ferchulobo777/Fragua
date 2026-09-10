@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Fragua.App.Data;
 using Fragua.App.ViewModels;
 using Fragua.App.Views;
 using Fragua.Core;
@@ -55,6 +56,7 @@ public partial class App : Application
         services.AddSingleton<UpscaleModelProvider>();
         services.AddSingleton<IImageUpscaler>(sp =>
             new OnnxImageUpscaler(sp.GetRequiredService<UpscaleModelProvider>().ModelPath));
+        services.AddSingleton<FraguaDatabase>();
         services.AddTransient<ConvertViewModel>();
 
         return services.BuildServiceProvider();

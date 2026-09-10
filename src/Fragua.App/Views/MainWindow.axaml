@@ -94,7 +94,7 @@
           </Button>
         </StackPanel>
 
-        <TextBlock Grid.Row="2" Text="Fase 0 · v0.1" Classes="muted" FontSize="{DynamicResource TextXs}"
+        <TextBlock Grid.Row="2" Text="v0.3.0" Classes="muted" FontSize="{DynamicResource TextXs}"
                    Margin="10,0,0,0" />
       </Grid>
     </Border>
@@ -112,6 +112,22 @@
           <TextBlock Text="Redimensiona y convierte una imagen, sin que salga de esta maquina."
                      Classes="muted" />
         </StackPanel>
+
+        <Border Classes="panel" Padding="16">
+          <StackPanel Spacing="10">
+            <TextBlock Text="Presets" Classes="eyebrow" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" IsVisible="{Binding HasPresets}">
+              <ComboBox Grid.Column="0" ItemsSource="{Binding PresetNames}" SelectedItem="{Binding SelectedPresetName}"
+                        PlaceholderText="Elegir un preset guardado..." HorizontalAlignment="Stretch" />
+              <Button Grid.Column="1" Classes="ghost" Content="Eliminar" Command="{Binding DeleteSelectedPresetCommand}"
+                      IsVisible="{Binding SelectedPresetName, Converter={x:Static convData:ObjectConverters.IsNotNull}}" />
+            </Grid>
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+              <TextBox Grid.Column="0" Text="{Binding NewPresetName}" PlaceholderText="Nombre para guardar el ajuste actual..." />
+              <Button Grid.Column="1" Classes="accent-outline" Content="Guardar como preset" Command="{Binding SavePresetCommand}" />
+            </Grid>
+          </StackPanel>
+        </Border>
 
         <Border x:Name="DropZone" Classes="dropzone" Padding="24" MinHeight="140">
           <Grid ColumnDefinitions="Auto,*,Auto">
@@ -345,6 +361,22 @@
                      Text="Convierte todos los archivos de una carpeta con el mismo ajuste de arriba." />
         </StackPanel>
 
+        <Border Classes="panel" Padding="16">
+          <StackPanel Spacing="10">
+            <TextBlock Text="Presets" Classes="eyebrow" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" IsVisible="{Binding HasPresets}">
+              <ComboBox Grid.Column="0" ItemsSource="{Binding PresetNames}" SelectedItem="{Binding SelectedPresetName}"
+                        PlaceholderText="Elegir un preset guardado..." HorizontalAlignment="Stretch" />
+              <Button Grid.Column="1" Classes="ghost" Content="Eliminar" Command="{Binding DeleteSelectedPresetCommand}"
+                      IsVisible="{Binding SelectedPresetName, Converter={x:Static convData:ObjectConverters.IsNotNull}}" />
+            </Grid>
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+              <TextBox Grid.Column="0" Text="{Binding NewPresetName}" PlaceholderText="Nombre para guardar el ajuste actual..." />
+              <Button Grid.Column="1" Classes="accent-outline" Content="Guardar como preset" Command="{Binding SavePresetCommand}" />
+            </Grid>
+          </StackPanel>
+        </Border>
+
         <Border Classes="panel" Padding="20">
           <Grid ColumnDefinitions="*,Auto">
             <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
@@ -571,7 +603,7 @@
             <StackPanel Orientation="Horizontal" Spacing="20">
               <Image Source="avares://Fragua.App/Assets/Icons/fragua-lockup.png" Width="140"
                      HorizontalAlignment="Left" />
-              <TextBlock Text="Fase 0 · v0.1" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
+              <TextBlock Text="v0.3.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
             </StackPanel>
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
             <TextBlock Text="Disenado y desarrollado por Fernando Rodriguez, 2026." TextWrapping="Wrap" />

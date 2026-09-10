@@ -1,3 +1,4 @@
+using Fragua.App.Data;
 using Fragua.App.Models;
 using Fragua.App.ViewModels;
 using Fragua.Core;
@@ -26,7 +27,7 @@ public sealed class BatchViewModelTests : IDisposable
         }
     }
 
-    private static ConvertViewModel CreateViewModel()
+    private ConvertViewModel CreateViewModel()
     {
         var loader = new MagickImageAssetLoader();
         var resizer = new MagickImageResizer();
@@ -34,11 +35,13 @@ public sealed class BatchViewModelTests : IDisposable
         var pipeline = new ImagePipeline(loader);
         var modelProvider = new SiluetaModelProvider(new HttpClient());
         var upscaleModelProvider = new UpscaleModelProvider(new HttpClient());
+        var database = new FraguaDatabase(Path.Combine(_workDir, "test.db"));
         return new ConvertViewModel(
             pipeline, resizer, writer,
             new NullBackgroundRemover(), modelProvider,
             new MagickImageVectorizer(),
-            new NullImageUpscaler(), upscaleModelProvider);
+            new NullImageUpscaler(), upscaleModelProvider,
+            database);
     }
 
     [Fact]

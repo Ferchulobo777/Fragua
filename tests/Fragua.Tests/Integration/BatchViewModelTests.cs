@@ -33,7 +33,12 @@ public sealed class BatchViewModelTests : IDisposable
         var writer = new MagickImageAssetWriter();
         var pipeline = new ImagePipeline(loader);
         var modelProvider = new SiluetaModelProvider(new HttpClient());
-        return new ConvertViewModel(pipeline, resizer, writer, new NullBackgroundRemover(), modelProvider, new MagickImageVectorizer());
+        var upscaleModelProvider = new UpscaleModelProvider(new HttpClient());
+        return new ConvertViewModel(
+            pipeline, resizer, writer,
+            new NullBackgroundRemover(), modelProvider,
+            new MagickImageVectorizer(),
+            new NullImageUpscaler(), upscaleModelProvider);
     }
 
     [Fact]

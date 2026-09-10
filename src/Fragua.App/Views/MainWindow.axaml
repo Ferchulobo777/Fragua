@@ -232,6 +232,29 @@
                          Text="Para logos y arte plano, no fotografias. Menos colores da un SVG mas limpio. Reemplaza el formato de salida y Optimizar." />
             </StackPanel>
 
+            <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
+
+            <StackPanel Spacing="10">
+              <CheckBox IsChecked="{Binding UpscaleEnabled}" Content="Mejorar calidad (IA local, x4)" />
+              <TextBlock Classes="muted" TextWrapping="Wrap"
+                         Text="Super-resolucion local, sin nube. La primera vez descarga el modelo (unos 60 MB) una sola vez. En fotos grandes puede tardar varios minutos: corre en la CPU, sin acelerar por GPU." />
+
+              <StackPanel Spacing="6" IsVisible="{Binding IsDownloadingUpscaleModel}">
+                <ProgressBar Minimum="0" Maximum="1" Value="{Binding UpscaleModelDownloadProgress}"
+                             HorizontalAlignment="Stretch" Height="8" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBlock Text="Descargando modelo..." />
+                  <TextBlock Text="{Binding UpscaleModelDownloadProgress, Converter={StaticResource Percent}}"
+                             FontFamily="{DynamicResource FontMono}" Foreground="{DynamicResource FraguaEmberBrush}" />
+                </StackPanel>
+              </StackPanel>
+
+              <TextBlock Classes="muted" Foreground="{DynamicResource FraguaErrorBrush}"
+                         Text="{Binding UpscaleModelDownloadError}"
+                         IsVisible="{Binding UpscaleModelDownloadError, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
+                         TextWrapping="Wrap" />
+            </StackPanel>
+
           </StackPanel>
         </Border>
 
@@ -410,6 +433,29 @@
               </Grid>
               <TextBlock Classes="muted" TextWrapping="Wrap"
                          Text="Para logos y arte plano, no fotografias. Menos colores da un SVG mas limpio. Reemplaza el formato de salida y Optimizar." />
+            </StackPanel>
+
+            <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
+
+            <StackPanel Spacing="10">
+              <CheckBox IsChecked="{Binding UpscaleEnabled}" Content="Mejorar calidad (IA local, x4)" />
+              <TextBlock Classes="muted" TextWrapping="Wrap"
+                         Text="Super-resolucion local, sin nube. La primera vez descarga el modelo (unos 60 MB) una sola vez. En fotos grandes puede tardar varios minutos: corre en la CPU, sin acelerar por GPU." />
+
+              <StackPanel Spacing="6" IsVisible="{Binding IsDownloadingUpscaleModel}">
+                <ProgressBar Minimum="0" Maximum="1" Value="{Binding UpscaleModelDownloadProgress}"
+                             HorizontalAlignment="Stretch" Height="8" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBlock Text="Descargando modelo..." />
+                  <TextBlock Text="{Binding UpscaleModelDownloadProgress, Converter={StaticResource Percent}}"
+                             FontFamily="{DynamicResource FontMono}" Foreground="{DynamicResource FraguaEmberBrush}" />
+                </StackPanel>
+              </StackPanel>
+
+              <TextBlock Classes="muted" Foreground="{DynamicResource FraguaErrorBrush}"
+                         Text="{Binding UpscaleModelDownloadError}"
+                         IsVisible="{Binding UpscaleModelDownloadError, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
+                         TextWrapping="Wrap" />
             </StackPanel>
           </StackPanel>
         </Border>

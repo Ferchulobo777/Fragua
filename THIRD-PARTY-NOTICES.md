@@ -27,10 +27,17 @@ interpolacion, segmentacion, generacion de SVG) es el original sin tocar.
 | Modelo | Licencia | Origen |
 |---|---|---|
 | silueta (U2Net comprimido) | Apache 2.0 | https://github.com/danielgatis/rembg |
+| Real-ESRGAN-General-x4v3 | BSD-3-Clause | https://github.com/xinntao/Real-ESRGAN |
 
-No se distribuye en este repositorio ni en el instalador: se descarga una
-sola vez la primera vez que se usa Quitar fondo, directo desde el release
-oficial de rembg, y queda cacheado en el perfil del usuario.
+Ninguno se distribuye en este repositorio ni en el instalador: se
+descargan una sola vez la primera vez que se usa Quitar fondo o Mejorar
+calidad, directo desde su fuente oficial, y quedan cacheados en el
+perfil del usuario. El export ONNX de Real-ESRGAN se toma de la
+publicacion oficial de Qualcomm AI Hub (mismo modelo, misma licencia
+BSD-3-Clause del proyecto original de Xintao Wang); se eligio la
+variante liviana (General x4v3) sobre la completa (x4plus, 23 bloques)
+porque esta ultima mide ~35 segundos por mosaico de 128px en CPU,
+impracticable para una foto real.
 
 ## Fuentes
 

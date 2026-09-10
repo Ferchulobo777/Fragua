@@ -22,6 +22,8 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     private readonly IBackgroundRemover _backgroundRemover;
     private readonly SiluetaModelProvider _modelProvider;
     private readonly IImageVectorizer _vectorizer;
+    private readonly IImageUpscaler _upscaler;
+    private readonly UpscaleModelProvider _upscaleModelProvider;
 
     public ConvertViewModel(
         ImagePipeline pipeline,
@@ -29,7 +31,9 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         IImageAssetWriter writer,
         IBackgroundRemover backgroundRemover,
         SiluetaModelProvider modelProvider,
-        IImageVectorizer vectorizer)
+        IImageVectorizer vectorizer,
+        IImageUpscaler upscaler,
+        UpscaleModelProvider upscaleModelProvider)
     {
         _pipeline = pipeline;
         _resizer = resizer;
@@ -37,6 +41,8 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         _backgroundRemover = backgroundRemover;
         _vectorizer = vectorizer;
         _modelProvider = modelProvider;
+        _upscaler = upscaler;
+        _upscaleModelProvider = upscaleModelProvider;
     }
 
     [ObservableProperty]
@@ -162,6 +168,54 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     private int _vectorizeColors = 16;
 
+    // --- Mejorar calidad: super-resolucion 4x local (Real-ESRGAN, ONNX).
+    // Mismo patron de descarga que Quitar fondo: primera vez baja el
+    // modelo, despues queda cacheado. Puede tardar en fotos grandes (corre
+    // en mosaicos de 128px, en CPU), asi que el aviso en la interfaz es
+    // honesto sobre eso. ---
+
+    [ObservableProperty]
+    private bool _upscaleEnabled;
+
+    [ObservableProperty]
+    private bool _isDownloadingUpscaleModel;
+
+    [ObservableProperty]
+    private double _upscaleModelDownloadProgress;
+
+    [ObservableProperty]
+    private string? _upscaleModelDownloadError;
+
+    public bool IsUpscaleModelReady => _upscaleModelProvider.IsModelReady;
+
+    async partial void OnUpscaleEnabledChanged(bool value)
+    {
+        if (!value || IsUpscaleModelReady || IsDownloadingUpscaleModel)
+        {
+            return;
+        }
+
+        IsDownloadingUpscaleModel = true;
+        UpscaleModelDownloadProgress = 0;
+        UpscaleModelDownloadError = null;
+
+        try
+        {
+            var progress = new Progress<double>(p => UpscaleModelDownloadProgress = p);
+            await _upscaleModelProvider.DownloadAsync(progress, CancellationToken.None);
+            OnPropertyChanged(nameof(IsUpscaleModelReady));
+        }
+        catch (Exception ex) when (ex is HttpRequestException or IOException or TaskCanceledException)
+        {
+            UpscaleModelDownloadError = "No se pudo descargar el modelo. Revisa la conexion e intenta de nuevo.";
+            UpscaleEnabled = false;
+        }
+        finally
+        {
+            IsDownloadingUpscaleModel = false;
+        }
+    }
+
     [ObservableProperty]
     private bool _isConverting;
 
@@ -264,9 +318,14 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
 
             var operations = new List<IImageOperation>();
 
-            // Primero, sobre la resolucion original: la mascara de
-            // segmentacion sale mejor cuanto mas detalle tiene la imagen
-            // que recibe.
+            // Mejorar calidad primero: sobre la resolucion mas original
+            // posible. Ademas el upscaler no preserva canal alfa, asi que
+            // si va despues de Quitar fondo se comeria la transparencia.
+            if (UpscaleEnabled && IsUpscaleModelReady)
+            {
+                operations.Add(new UpscaleOperation(_upscaler));
+            }
+
             if (RemoveBackgroundEnabled && IsModelReady)
             {
                 operations.Add(new RemoveBackgroundOperation(_backgroundRemover));
@@ -495,6 +554,10 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
             var jobs = BatchFiles.Select(item =>
             {
                 var operations = new List<IImageOperation>();
+                if (UpscaleEnabled && IsUpscaleModelReady)
+                {
+                    operations.Add(new UpscaleOperation(_upscaler));
+                }
                 if (RemoveBackgroundEnabled && IsModelReady)
                 {
                     operations.Add(new RemoveBackgroundOperation(_backgroundRemover));

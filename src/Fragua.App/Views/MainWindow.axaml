@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Fragua.App.ViewModels"
+        xmlns:models="using:Fragua.App.Models"
         xmlns:conv="using:Fragua.App.Converters"
         xmlns:convData="using:Avalonia.Data.Converters"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -22,6 +23,7 @@
     <conv:BoolToBrushConverter x:Key="NavIconBrush"
                                TrueBrush="{StaticResource FraguaEmberBrush}"
                                FalseBrush="{StaticResource FraguaTextMutedBrush}" />
+    <conv:BatchStatusConverter x:Key="BatchStatus" />
   </Window.Resources>
 
   <Grid ColumnDefinitions="220,*" Background="{DynamicResource FraguaCanvasBrush}">
@@ -102,7 +104,7 @@
      <Grid>
 
       <!-- Pestana Convertir -->
-      <StackPanel Margin="32,28" Spacing="20" MaxWidth="640" HorizontalAlignment="Center"
+      <StackPanel Margin="32,28" Spacing="20" MaxWidth="960" HorizontalAlignment="Center"
                   IsVisible="{Binding IsConvertTab}">
 
         <StackPanel Spacing="4">
@@ -180,8 +182,9 @@
 
         <!-- Progreso determinado: se llena segun el paso real del pipeline,
              no una animacion que finge avanzar. -->
-        <StackPanel Spacing="6" IsVisible="{Binding IsConverting}">
-          <ProgressBar Minimum="0" Maximum="1" Value="{Binding ProgressFraction}">
+        <StackPanel Spacing="8" IsVisible="{Binding IsConverting}" HorizontalAlignment="Stretch">
+          <ProgressBar Minimum="0" Maximum="1" Value="{Binding ProgressFraction}"
+                       HorizontalAlignment="Stretch" Height="10">
             <ProgressBar.Transitions>
               <Transitions>
                 <DoubleTransition Property="Value" Duration="0:0:0.25" Easing="CubicEaseOut" />
@@ -189,9 +192,9 @@
             </ProgressBar.Transitions>
           </ProgressBar>
           <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Text="{Binding ProgressStepName}" Classes="muted" />
+            <TextBlock Text="{Binding ProgressStepName}" FontWeight="Medium" />
             <TextBlock Text="{Binding ProgressFraction, Converter={StaticResource Percent}}"
-                       Classes="muted" FontFamily="{DynamicResource FontMono}" />
+                       FontFamily="{DynamicResource FontMono}" Foreground="{DynamicResource FraguaEmberBrush}" />
           </StackPanel>
         </StackPanel>
 
@@ -232,43 +235,157 @@
 
       </StackPanel>
 
-      <!-- Pestana Lotes: fase 1, todavia no implementada. Estado explicito
-           en vez de un boton muerto sin explicacion. -->
-      <StackPanel Margin="32,28" Spacing="16" MaxWidth="640" HorizontalAlignment="Center"
+      <!-- Pestana Lotes: convierte todos los archivos de una carpeta con el
+           mismo ajuste de redimension y formato de la pestana Convertir,
+           corriendo sobre el mismo pipeline probado (RunBatchAsync). -->
+      <StackPanel Margin="32,28" Spacing="20" MaxWidth="960" HorizontalAlignment="Center"
                   IsVisible="{Binding IsBatchTab}">
-        <TextBlock Text="Lotes" Classes="heading" />
-        <Border Classes="panel" Padding="28">
-          <StackPanel Spacing="10" HorizontalAlignment="Center">
-            <Canvas Width="28" Height="28" HorizontalAlignment="Center">
-              <Rectangle Canvas.Left="4" Canvas.Top="5" Width="20" Height="4" RadiusX="1.5" RadiusY="1.5" Fill="{DynamicResource FraguaTextMutedBrush}" />
-              <Rectangle Canvas.Left="4" Canvas.Top="12" Width="20" Height="4" RadiusX="1.5" RadiusY="1.5" Fill="{DynamicResource FraguaTextMutedBrush}" Opacity="0.7" />
-              <Rectangle Canvas.Left="4" Canvas.Top="19" Width="13" Height="4" RadiusX="1.5" RadiusY="1.5" Fill="{DynamicResource FraguaEmberBrush}" Opacity="0.6" />
-            </Canvas>
-            <TextBlock Text="Todavia no esta en esta version" FontWeight="Medium" HorizontalAlignment="Center" />
-            <TextBlock Classes="muted" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"
-                       Text="La conversion de carpetas enteras con progreso y ajustes predefinidos llega en la fase 1. Convertir un archivo a la vez ya funciona completo hoy." />
+
+        <StackPanel Spacing="4">
+          <TextBlock Text="Lotes" Classes="heading" />
+          <TextBlock Classes="muted"
+                     Text="Convierte todos los archivos de una carpeta con el mismo ajuste de arriba." />
+        </StackPanel>
+
+        <Border Classes="panel" Padding="20">
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+              <TextBlock Text="{Binding BatchFolder}" IsVisible="{Binding HasBatchFolder}"
+                         TextTrimming="CharacterEllipsis" />
+              <TextBlock Text="Ninguna carpeta elegida" Classes="muted" IsVisible="{Binding !HasBatchFolder}" />
+              <TextBlock Classes="muted" IsVisible="{Binding HasBatchFiles}">
+                <Run Text="{Binding BatchFiles.Count}" />
+                <Run Text="archivos" />
+              </TextBlock>
+            </StackPanel>
+            <Button Grid.Column="1" Classes="ghost" Content="Elegir carpeta..." Click="OnBrowseFolderClick"
+                    VerticalAlignment="Center" />
+          </Grid>
+        </Border>
+
+        <!-- Mismo ajuste que Convertir: es un solo pipeline, no dos
+             configuraciones separadas que se puedan desincronizar. -->
+        <Border Classes="panel" Padding="20">
+          <StackPanel Spacing="18">
+            <StackPanel Spacing="10">
+              <CheckBox IsChecked="{Binding ResizeEnabled}" Content="Redimensionar" />
+              <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10" IsEnabled="{Binding ResizeEnabled}">
+                <ComboBox Grid.Column="0" ItemsSource="{Binding AvailableResizeModes}"
+                          SelectedItem="{Binding ResizeMode}" HorizontalAlignment="Stretch" />
+                <TextBox Grid.Column="1" Text="{Binding WidthText}"
+                         PlaceholderText="Ancho" IsVisible="{Binding !IsPercentageMode}" />
+                <TextBox Grid.Column="1" Text="{Binding WidthText}"
+                         PlaceholderText="Porcentaje, ej. 50" IsVisible="{Binding IsPercentageMode}" />
+                <TextBox Grid.Column="2" Text="{Binding HeightText}" PlaceholderText="Alto"
+                         IsVisible="{Binding !IsPercentageMode}" />
+              </Grid>
+            </StackPanel>
+            <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
+            <StackPanel Spacing="10">
+              <TextBlock Text="Formato de salida" Classes="eyebrow" />
+              <ComboBox ItemsSource="{Binding AvailableFormats}" SelectedItem="{Binding TargetFormat}"
+                        HorizontalAlignment="Stretch" />
+            </StackPanel>
           </StackPanel>
         </Border>
+
+        <Button Classes="primary" Content="Iniciar conversion por lotes" Command="{Binding StartBatchCommand}"
+                HorizontalAlignment="Left" IsEnabled="{Binding !IsBatchRunning}"
+                IsVisible="{Binding HasBatchFiles}" />
+
+        <StackPanel Spacing="8" IsVisible="{Binding IsBatchRunning}" HorizontalAlignment="Stretch">
+          <ProgressBar Minimum="0" Maximum="1" Value="{Binding BatchProgressFraction}"
+                       HorizontalAlignment="Stretch" Height="10">
+            <ProgressBar.Transitions>
+              <Transitions>
+                <DoubleTransition Property="Value" Duration="0:0:0.25" Easing="CubicEaseOut" />
+              </Transitions>
+            </ProgressBar.Transitions>
+          </ProgressBar>
+          <TextBlock FontFamily="{DynamicResource FontMono}" FontWeight="Medium"
+                     Foreground="{DynamicResource FraguaEmberBrush}"
+                     Text="{Binding BatchProgressFraction, Converter={StaticResource Percent}}" />
+        </StackPanel>
+
+        <Border Classes="panel" Padding="4" IsVisible="{Binding HasBatchFiles}" MaxHeight="320">
+          <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding BatchFiles}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="models:BatchFileItem">
+                  <Grid ColumnDefinitions="Auto,*,Auto" Margin="12,8">
+                    <Ellipse Grid.Column="0" Width="8" Height="8" VerticalAlignment="Center" Margin="0,0,10,0"
+                             Fill="{Binding Status, Converter={StaticResource BatchStatus}}" />
+                    <TextBlock Grid.Column="1" Text="{Binding FileName}" TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Center" Margin="0,0,10,0" />
+                    <TextBlock Grid.Column="2" Text="{Binding Detail}" Classes="muted" VerticalAlignment="Center"
+                               MaxWidth="140" TextTrimming="CharacterEllipsis" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Border>
+
+        <StackPanel Orientation="Horizontal" Spacing="16" IsVisible="{Binding HasBatchResults}">
+          <TextBlock Classes="muted">
+            <Run Text="{Binding BatchCompletedCount}" />
+            <Run Text="listos" />
+          </TextBlock>
+          <TextBlock Classes="muted" Foreground="{DynamicResource FraguaErrorBrush}" IsVisible="{Binding HasBatchFailures}">
+            <Run Text="{Binding BatchFailedCount}" />
+            <Run Text="con error" />
+          </TextBlock>
+        </StackPanel>
+
       </StackPanel>
 
-      <StackPanel Margin="32,28" Spacing="16" MaxWidth="640" HorizontalAlignment="Center"
+      <StackPanel Margin="32,28" Spacing="20" MaxWidth="960" HorizontalAlignment="Center"
                   IsVisible="{Binding IsHistoryTab}">
-        <TextBlock Text="Historial" Classes="heading" />
-        <Border Classes="panel" Padding="28">
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel Grid.Column="0" Spacing="4">
+            <TextBlock Text="Historial" Classes="heading" />
+            <TextBlock Classes="muted" Text="Lo que se convirtio en esta sesion. Todavia no queda guardado al cerrar la app." />
+          </StackPanel>
+          <Button Grid.Column="1" Classes="ghost" Content="Limpiar historial" Command="{Binding ClearHistoryCommand}"
+                  IsVisible="{Binding HasHistory}" VerticalAlignment="Top" />
+        </Grid>
+
+        <Border Classes="panel" Padding="28" IsVisible="{Binding !HasHistory}">
           <StackPanel Spacing="10" HorizontalAlignment="Center">
             <Canvas Width="28" Height="28" HorizontalAlignment="Center">
               <Ellipse Canvas.Left="2" Canvas.Top="2" Width="24" Height="24" Stroke="{DynamicResource FraguaTextMutedBrush}" StrokeThickness="1.6" />
               <Path Data="M14 7v7l5 3" Stroke="{DynamicResource FraguaEmberBrush}" StrokeThickness="1.6" StrokeLineCap="Round" StrokeJoin="Round" />
             </Canvas>
-            <TextBlock Text="Todavia no esta en esta version" FontWeight="Medium" HorizontalAlignment="Center" />
-            <TextBlock Classes="muted" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"
-                       Text="El registro persistente de conversiones anteriores llega en la fase 1, junto con lotes y ajustes predefinidos." />
+            <TextBlock Text="Todavia no convertiste nada en esta sesion" FontWeight="Medium" HorizontalAlignment="Center" />
           </StackPanel>
+        </Border>
+
+        <Border Classes="panel" Padding="4" IsVisible="{Binding HasHistory}" MaxHeight="440">
+          <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding History}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="models:HistoryEntry">
+                  <Grid ColumnDefinitions="*,Auto,Auto" Margin="12,10">
+                    <TextBlock Grid.Column="0" Text="{Binding FileName}" TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Center" Margin="0,0,10,0" />
+                    <TextBlock Grid.Column="1" Classes="muted" FontFamily="{DynamicResource FontMono}"
+                               VerticalAlignment="Center" Margin="0,0,14,0">
+                      <Run Text="{Binding SizeBeforeBytes, Converter={StaticResource ByteSize}}" />
+                      <Run Text="→" />
+                      <Run Text="{Binding SizeAfterBytes, Converter={StaticResource ByteSize}}" />
+                    </TextBlock>
+                    <TextBlock Grid.Column="2" Classes="muted" Text="{Binding When, StringFormat={}{0:HH:mm:ss}}"
+                               VerticalAlignment="Center" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
         </Border>
       </StackPanel>
 
       <!-- Acerca de: creditos y tecnologias reales, no una pantalla generica. -->
-      <StackPanel Margin="32,28" Spacing="20" MaxWidth="640" HorizontalAlignment="Center"
+      <StackPanel Margin="32,28" Spacing="20" MaxWidth="960" HorizontalAlignment="Center"
                   IsVisible="{Binding IsAboutTab}">
         <StackPanel Spacing="4">
           <TextBlock Text="Acerca de Fragua" Classes="heading" />
@@ -295,9 +412,39 @@
           <StackPanel Spacing="12">
             <TextBlock Text="Tecnologia" Classes="eyebrow" />
             <WrapPanel>
-              <Border Classes="techchip" Margin="0,0,8,8"><TextBlock Text="Avalonia UI" /></Border>
-              <Border Classes="techchip" Margin="0,0,8,8"><TextBlock Text=".NET 10" /></Border>
-              <Border Classes="techchip" Margin="0,0,8,8"><TextBlock Text="C#" /></Border>
+
+              <!-- Logos reales (simple-icons): Avalonia UI y .NET tienen
+                   marca publicada y libre de usar. -->
+              <Border Classes="techchip" Margin="0,0,8,8">
+                <StackPanel Orientation="Horizontal" Spacing="7">
+                  <Viewbox Width="14" Height="14">
+                    <Canvas Width="24" Height="24">
+                      <Path Fill="#165BFF" Data="M12.034 8.208c-2.003 0-3.627 1.696-3.627 3.789s1.624 3.789 3.627 3.789 3.627-1.697 3.627-3.79-1.624-3.788-3.627-3.788m-7.392 2.067c.72.211 1.248.902 1.248 1.722s-.528 1.51-1.248 1.721c.752 3.54 3.776 6.188 7.392 6.188 1.316 0 2.554-.35 3.632-.967v.914h3.94v-7.528a5 5 0 0 0 0-.224v-.104c0-4.369-3.39-7.91-7.572-7.91-3.616 0-6.64 2.648-7.392 6.188m-.5 2.982c.67 0 1.212-.567 1.212-1.266s-.542-1.265-1.212-1.265-1.211.566-1.211 1.265c0 .7.542 1.266 1.211 1.266M20.682 24H11.8C5.549 23.887.515 18.556.515 12c0-6.627 5.143-12 11.487-12 6.241 0 11.32 5.2 11.483 11.678l-.02 9.743C23.3 22.876 22.12 24 20.683 24" />
+                    </Canvas>
+                  </Viewbox>
+                  <TextBlock Text="Avalonia UI" />
+                </StackPanel>
+              </Border>
+
+              <Border Classes="techchip" Margin="0,0,8,8">
+                <StackPanel Orientation="Horizontal" Spacing="7">
+                  <Viewbox Width="14" Height="14">
+                    <Canvas Width="24" Height="24">
+                      <Path Fill="#512BD4" Data="M24 8.77h-2.468v7.565h-1.425V8.77h-2.462V7.53H24zm-6.852 7.565h-4.821V7.53h4.63v1.24h-3.205v2.494h2.953v1.234h-2.953v2.604h3.396zm-6.708 0H8.882L4.78 9.863a2.896 2.896 0 0 1-.258-.51h-.036c.032.189.048.592.048 1.21v5.772H3.157V7.53h1.659l3.965 6.32c.167.261.275.442.323.54h.024c-.04-.233-.06-.629-.06-1.185V7.529h1.372zm-8.703-.693a.868.829 0 0 1-.869.829.868.829 0 0 1-.868-.83.868.829 0 0 1 .868-.828.868.829 0 0 1 .869.829Z" />
+                    </Canvas>
+                  </Viewbox>
+                  <TextBlock Text=".NET 10" />
+                </StackPanel>
+              </Border>
+
+              <!-- Sin logo de marca libre disponible para estas: se marcan
+                   con un glifo neutro en vez de inventar uno. -->
+              <Border Classes="techchip" Margin="0,0,8,8">
+                <StackPanel Orientation="Horizontal" Spacing="7">
+                  <TextBlock Text="{}{ }" Foreground="{DynamicResource FraguaTextMutedBrush}" FontFamily="{DynamicResource FontMono}" />
+                  <TextBlock Text="C#" />
+                </StackPanel>
+              </Border>
               <Border Classes="techchip" Margin="0,0,8,8"><TextBlock Text="Magick.NET" /></Border>
               <Border Classes="techchip" Margin="0,0,8,8"><TextBlock Text="CommunityToolkit.Mvvm" /></Border>
             </WrapPanel>

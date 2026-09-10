@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Fragua.Core\Fragua.Core.csproj" />
     <ProjectReference Include="..\..\src\Fragua.Imaging\Fragua.Imaging.csproj" />
+    <ProjectReference Include="..\..\src\Fragua.App\Fragua.App.csproj" />
   </ItemGroup>
 
 </Project>

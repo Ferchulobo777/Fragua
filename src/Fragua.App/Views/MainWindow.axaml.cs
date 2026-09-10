@@ -52,6 +52,23 @@ public partial class MainWindow : Window
         await LoadFileAsync(path);
     }
 
+    private async void OnBrowseFolderClick(object? sender, RoutedEventArgs e)
+    {
+        var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = "Elegir una carpeta",
+            AllowMultiple = false,
+        });
+
+        var path = folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
+        if (path is null || DataContext is not ConvertViewModel vm)
+        {
+            return;
+        }
+
+        vm.SetBatchFolder(path);
+    }
+
     private async Task LoadFileAsync(string? path)
     {
         if (path is null || DataContext is not ConvertViewModel vm)

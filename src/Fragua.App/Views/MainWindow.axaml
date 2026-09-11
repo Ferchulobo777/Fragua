@@ -153,7 +153,7 @@
           </Button>
         </StackPanel>
 
-        <TextBlock Grid.Row="2" Text="v0.11.0" Classes="muted" FontSize="{DynamicResource TextXs}"
+        <TextBlock Grid.Row="2" Text="v0.11.1" Classes="muted" FontSize="{DynamicResource TextXs}"
                    Margin="10,0,0,0" />
       </Grid>
     </Border>
@@ -967,17 +967,47 @@
                      Classes="muted" />
         </StackPanel>
 
-        <Border Classes="panel" Padding="28" IsVisible="{Binding !HasSource}">
-          <StackPanel Spacing="8" HorizontalAlignment="Center">
-            <TextBlock Text="Todavia no cargaste una imagen" HorizontalAlignment="Center" FontWeight="Medium" />
-            <TextBlock Text="Cargala en Convertir o Lotes para ver sus metadatos aca." Classes="muted"
-                       HorizontalAlignment="Center" />
-          </StackPanel>
+        <Border x:Name="MetadataDropZone" Classes="dropzone" Padding="24" MinHeight="140">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <StackPanel Grid.Column="0" Grid.ColumnSpan="3" Spacing="10" IsVisible="{Binding !HasSource}"
+                        HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Canvas Width="30" Height="30" HorizontalAlignment="Center">
+                <Path Data="M15 22V9M9.5 14.5 15 9l5.5 5.5M6 24h18"
+                      Stroke="{DynamicResource FraguaTextMutedBrush}" StrokeThickness="1.8"
+                      StrokeLineCap="Round" StrokeJoin="Round" />
+              </Canvas>
+              <TextBlock Text="Solta una imagen aca" HorizontalAlignment="Center" FontWeight="Medium" />
+              <TextBlock Text="o hace clic para elegirla" Classes="muted" HorizontalAlignment="Center" />
+            </StackPanel>
+
+            <Border Grid.Column="0" Width="96" Height="96" CornerRadius="{DynamicResource RadiusMd}"
+                    Background="{DynamicResource FraguaFieldBrush}" ClipToBounds="True"
+                    IsVisible="{Binding HasSource}" Margin="0,0,18,0">
+              <Image Source="{Binding SourcePreview}" Stretch="UniformToFill" IsVisible="{Binding HasSourcePreview}" />
+            </Border>
+
+            <StackPanel Grid.Column="1" Spacing="6" IsVisible="{Binding HasSource}"
+                        VerticalAlignment="Center" MinWidth="0">
+              <TextBlock Text="{Binding SourcePath}" TextTrimming="CharacterEllipsis"
+                         MaxLines="1" FontWeight="Medium" />
+              <StackPanel Orientation="Horizontal" Spacing="12">
+                <TextBlock Classes="muted">
+                  <Run Text="{Binding SourceAsset.WidthPixels}" />
+                  <Run Text="×" />
+                  <Run Text="{Binding SourceAsset.HeightPixels}" />
+                  <Run Text="px" />
+                </TextBlock>
+                <TextBlock Classes="muted"
+                           Text="{Binding SourceAsset.SizeBytes, Converter={StaticResource ByteSize}}" />
+              </StackPanel>
+            </StackPanel>
+
+            <Button Grid.Column="2" Classes="ghost" Content="Elegir..." Click="OnBrowseClick"
+                    VerticalAlignment="Center" />
+          </Grid>
         </Border>
 
         <StackPanel Spacing="16" IsVisible="{Binding HasSource}">
-          <TextBlock Text="{Binding SourcePath}" TextTrimming="CharacterEllipsis" MaxLines="1" Classes="muted" />
-
           <TextBlock Text="Leyendo metadatos..." Classes="muted" IsVisible="{Binding IsReadingMetadata}" />
 
           <Border Classes="panel" Padding="28"
@@ -1044,17 +1074,47 @@
                      Classes="muted" />
         </StackPanel>
 
-        <Border Classes="panel" Padding="28" IsVisible="{Binding !HasSource}">
-          <StackPanel Spacing="8" HorizontalAlignment="Center">
-            <TextBlock Text="Todavia no cargaste una imagen" HorizontalAlignment="Center" FontWeight="Medium" />
-            <TextBlock Text="Cargala en Convertir o Lotes para sacarle la paleta." Classes="muted"
-                       HorizontalAlignment="Center" />
-          </StackPanel>
+        <Border x:Name="PaletteDropZone" Classes="dropzone" Padding="24" MinHeight="140">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <StackPanel Grid.Column="0" Grid.ColumnSpan="3" Spacing="10" IsVisible="{Binding !HasSource}"
+                        HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Canvas Width="30" Height="30" HorizontalAlignment="Center">
+                <Path Data="M15 22V9M9.5 14.5 15 9l5.5 5.5M6 24h18"
+                      Stroke="{DynamicResource FraguaTextMutedBrush}" StrokeThickness="1.8"
+                      StrokeLineCap="Round" StrokeJoin="Round" />
+              </Canvas>
+              <TextBlock Text="Solta una imagen aca" HorizontalAlignment="Center" FontWeight="Medium" />
+              <TextBlock Text="o hace clic para elegirla" Classes="muted" HorizontalAlignment="Center" />
+            </StackPanel>
+
+            <Border Grid.Column="0" Width="96" Height="96" CornerRadius="{DynamicResource RadiusMd}"
+                    Background="{DynamicResource FraguaFieldBrush}" ClipToBounds="True"
+                    IsVisible="{Binding HasSource}" Margin="0,0,18,0">
+              <Image Source="{Binding SourcePreview}" Stretch="UniformToFill" IsVisible="{Binding HasSourcePreview}" />
+            </Border>
+
+            <StackPanel Grid.Column="1" Spacing="6" IsVisible="{Binding HasSource}"
+                        VerticalAlignment="Center" MinWidth="0">
+              <TextBlock Text="{Binding SourcePath}" TextTrimming="CharacterEllipsis"
+                         MaxLines="1" FontWeight="Medium" />
+              <StackPanel Orientation="Horizontal" Spacing="12">
+                <TextBlock Classes="muted">
+                  <Run Text="{Binding SourceAsset.WidthPixels}" />
+                  <Run Text="×" />
+                  <Run Text="{Binding SourceAsset.HeightPixels}" />
+                  <Run Text="px" />
+                </TextBlock>
+                <TextBlock Classes="muted"
+                           Text="{Binding SourceAsset.SizeBytes, Converter={StaticResource ByteSize}}" />
+              </StackPanel>
+            </StackPanel>
+
+            <Button Grid.Column="2" Classes="ghost" Content="Elegir..." Click="OnBrowseClick"
+                    VerticalAlignment="Center" />
+          </Grid>
         </Border>
 
         <StackPanel Spacing="16" IsVisible="{Binding HasSource}">
-          <TextBlock Text="{Binding SourcePath}" TextTrimming="CharacterEllipsis" MaxLines="1" Classes="muted" />
-
           <StackPanel Spacing="10">
             <TextBlock Text="Cantidad de colores" />
             <Grid ColumnDefinitions="*,Auto" Width="380" HorizontalAlignment="Left">
@@ -1283,7 +1343,7 @@
             <StackPanel Orientation="Horizontal" Spacing="20">
               <Image Source="avares://Fragua.App/Assets/Icons/fragua-lockup.png" Width="140"
                      HorizontalAlignment="Left" />
-              <TextBlock Text="v0.11.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
+              <TextBlock Text="v0.11.1" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
             </StackPanel>
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
             <TextBlock Text="Disenado y desarrollado por Fernando Rodriguez, 2026." TextWrapping="Wrap" />

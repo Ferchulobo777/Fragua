@@ -26,6 +26,8 @@ public partial class MainWindow : Window
         e.DragEffects = hasFile ? DragDropEffects.Copy : DragDropEffects.None;
         DropZone.Classes.Set("active", hasFile);
         IconsDropZone.Classes.Set("active", hasFile);
+        MetadataDropZone.Classes.Set("active", hasFile);
+        PaletteDropZone.Classes.Set("active", hasFile);
         CollageDropZone.Classes.Set("active", hasFile);
     }
 
@@ -33,6 +35,8 @@ public partial class MainWindow : Window
     {
         DropZone.Classes.Set("active", false);
         IconsDropZone.Classes.Set("active", false);
+        MetadataDropZone.Classes.Set("active", false);
+        PaletteDropZone.Classes.Set("active", false);
         CollageDropZone.Classes.Set("active", false);
     }
 
@@ -40,6 +44,8 @@ public partial class MainWindow : Window
     {
         DropZone.Classes.Set("active", false);
         IconsDropZone.Classes.Set("active", false);
+        MetadataDropZone.Classes.Set("active", false);
+        PaletteDropZone.Classes.Set("active", false);
         CollageDropZone.Classes.Set("active", false);
 
         if (DataContext is ConvertViewModel { IsCollageTab: true } collageVm)

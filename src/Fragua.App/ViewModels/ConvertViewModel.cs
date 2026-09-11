@@ -26,6 +26,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     private readonly IImageUpscaler _upscaler;
     private readonly UpscaleModelProvider _upscaleModelProvider;
     private readonly FraguaDatabase _database;
+    private readonly IIconSetGenerator _iconSetGenerator;
 
     public ConvertViewModel(
         ImagePipeline pipeline,
@@ -36,7 +37,8 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         IImageVectorizer vectorizer,
         IImageUpscaler upscaler,
         UpscaleModelProvider upscaleModelProvider,
-        FraguaDatabase database)
+        FraguaDatabase database,
+        IIconSetGenerator iconSetGenerator)
     {
         _pipeline = pipeline;
         _resizer = resizer;
@@ -47,6 +49,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         _upscaler = upscaler;
         _upscaleModelProvider = upscaleModelProvider;
         _database = database;
+        _iconSetGenerator = iconSetGenerator;
 
         LoadHistoryFromDatabase();
         LoadPresetsFromDatabase();
@@ -293,6 +296,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
 
     public bool IsConvertTab => ActiveTab == AppTab.Convert;
     public bool IsBatchTab => ActiveTab == AppTab.Batch;
+    public bool IsIconsTab => ActiveTab == AppTab.Icons;
     public bool IsHistoryTab => ActiveTab == AppTab.History;
     public bool IsAboutTab => ActiveTab == AppTab.About;
 
@@ -300,6 +304,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     {
         OnPropertyChanged(nameof(IsConvertTab));
         OnPropertyChanged(nameof(IsBatchTab));
+        OnPropertyChanged(nameof(IsIconsTab));
         OnPropertyChanged(nameof(IsHistoryTab));
         OnPropertyChanged(nameof(IsAboutTab));
     }
@@ -317,6 +322,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     {
         OnPropertyChanged(nameof(HasSource));
         ConvertCommand.NotifyCanExecuteChanged();
+        GenerateIconsCommand.NotifyCanExecuteChanged();
     }
 
     partial void OnResultAssetChanged(ImageAsset? value)
@@ -337,6 +343,10 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
 
         ResultPreview?.Dispose();
         ResultPreview = null;
+
+        GeneratedIconFiles.Clear();
+        IconGenerationError = null;
+        OnPropertyChanged(nameof(HasGeneratedIcons));
     }
 
     private static readonly TimeSpan MinVisibleDuration = TimeSpan.FromMilliseconds(900);
@@ -839,6 +849,66 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     }
 
     partial void OnNewPresetNameChanged(string value) => SavePresetCommand.NotifyCanExecuteChanged();
+
+    // --- Iconos: de una imagen (logo, foto) genera todo el set de tamanos
+    // que pide un icono de escritorio o un favicon, mas el .ico combinado.
+    // Usa la misma imagen cargada en Convertir: no hace falta cargarla dos
+    // veces, es "la imagen con la que estoy trabajando ahora". ---
+
+    private static readonly int[] StandardIconSizes = [16, 32, 48, 64, 128, 256, 512];
+
+    [ObservableProperty]
+    private bool _includeIco = true;
+
+    [ObservableProperty]
+    private bool _isGeneratingIcons;
+
+    [ObservableProperty]
+    private string? _iconGenerationError;
+
+    public ObservableCollection<string> GeneratedIconFiles { get; } = [];
+
+    public bool HasGeneratedIcons => GeneratedIconFiles.Count > 0;
+
+    private bool CanGenerateIcons() => HasSource && !IsGeneratingIcons;
+
+    [RelayCommand(CanExecute = nameof(CanGenerateIcons))]
+    private async Task GenerateIconsAsync()
+    {
+        if (SourcePath is null || SourceAsset is null)
+        {
+            return;
+        }
+
+        IsGeneratingIcons = true;
+        IconGenerationError = null;
+        GeneratedIconFiles.Clear();
+        OnPropertyChanged(nameof(HasGeneratedIcons));
+
+        try
+        {
+            var destinationDirectory = Path.Combine(
+                Path.GetDirectoryName(SourcePath) ?? Directory.GetCurrentDirectory(), "Fragua");
+            var spec = new IconSetSpec(StandardIconSizes, IncludeIco);
+            var result = await _iconSetGenerator.GenerateAsync(SourceAsset, spec, destinationDirectory, CancellationToken.None);
+
+            foreach (var file in result.GeneratedFiles)
+            {
+                GeneratedIconFiles.Add(Path.GetFileName(file));
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            IconGenerationError = "No se pudo escribir en la carpeta de destino.";
+        }
+        finally
+        {
+            IsGeneratingIcons = false;
+            OnPropertyChanged(nameof(HasGeneratedIcons));
+        }
+    }
+
+    partial void OnIsGeneratingIconsChanged(bool value) => GenerateIconsCommand.NotifyCanExecuteChanged();
 
     /// <summary>
     /// Si la ventana se cierra a mitad de una conversion o un lote, el token

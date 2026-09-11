@@ -4,6 +4,7 @@ public enum AppTab
 {
     Convert,
     Batch,
+    Icons,
     History,
     About,
 }

@@ -24,16 +24,19 @@ public partial class MainWindow : Window
         var hasFile = e.DataTransfer.Contains(DataFormat.File);
         e.DragEffects = hasFile ? DragDropEffects.Copy : DragDropEffects.None;
         DropZone.Classes.Set("active", hasFile);
+        IconsDropZone.Classes.Set("active", hasFile);
     }
 
     private void OnDragLeave(object? sender, RoutedEventArgs e)
     {
         DropZone.Classes.Set("active", false);
+        IconsDropZone.Classes.Set("active", false);
     }
 
     private async void OnDrop(object? sender, DragEventArgs e)
     {
         DropZone.Classes.Set("active", false);
+        IconsDropZone.Classes.Set("active", false);
 
         var file = e.DataTransfer.TryGetFile();
         var path = file?.TryGetLocalPath();

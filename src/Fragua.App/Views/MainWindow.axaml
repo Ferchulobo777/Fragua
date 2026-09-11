@@ -67,6 +67,20 @@
             </StackPanel>
           </Button>
 
+          <Button Classes.active="{Binding IsIconsTab}" Classes="nav"
+                  Command="{Binding GoToTabCommand}" CommandParameter="{x:Static vm:AppTab.Icons}">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <Canvas Width="16" Height="16" VerticalAlignment="Center">
+                <Rectangle Canvas.Left="1" Canvas.Top="1" Width="10" Height="10" RadiusX="2" RadiusY="2"
+                           Stroke="{DynamicResource FraguaTextMutedBrush}" StrokeThickness="1.4" />
+                <Rectangle Canvas.Left="5" Canvas.Top="5" Width="10" Height="10" RadiusX="2" RadiusY="2"
+                           Fill="{DynamicResource FraguaPanelBrush}" Stroke="{DynamicResource FraguaTextMutedBrush}"
+                           StrokeThickness="1.4" />
+              </Canvas>
+              <TextBlock Text="Iconos" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+
           <Button Classes.active="{Binding IsHistoryTab}" Classes="nav"
                   Command="{Binding GoToTabCommand}" CommandParameter="{x:Static vm:AppTab.History}">
             <StackPanel Orientation="Horizontal" Spacing="10">
@@ -94,7 +108,7 @@
           </Button>
         </StackPanel>
 
-        <TextBlock Grid.Row="2" Text="v0.4.0" Classes="muted" FontSize="{DynamicResource TextXs}"
+        <TextBlock Grid.Row="2" Text="v0.5.0" Classes="muted" FontSize="{DynamicResource TextXs}"
                    Margin="10,0,0,0" />
       </Grid>
     </Border>
@@ -627,6 +641,98 @@
 
       </StackPanel>
 
+      <!-- Pestana Iconos: de una imagen (logo, foto) genera todo el set de
+           tamanos que pide un icono de escritorio o un favicon. Usa la
+           misma imagen cargada, no un dropzone con estado propio. -->
+      <StackPanel Margin="32,28" Spacing="20" HorizontalAlignment="Stretch" MaxWidth="760"
+                  IsVisible="{Binding IsIconsTab}">
+
+        <StackPanel Spacing="4">
+          <TextBlock Text="Iconos" Classes="heading" />
+          <TextBlock Text="De una imagen, todo el set de tamanos para un icono de escritorio o un favicon."
+                     Classes="muted" />
+        </StackPanel>
+
+        <Border x:Name="IconsDropZone" Classes="dropzone" Padding="24" MinHeight="140">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <StackPanel Grid.Column="0" Grid.ColumnSpan="3" Spacing="10" IsVisible="{Binding !HasSource}"
+                        HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Canvas Width="30" Height="30" HorizontalAlignment="Center">
+                <Path Data="M15 22V9M9.5 14.5 15 9l5.5 5.5M6 24h18"
+                      Stroke="{DynamicResource FraguaTextMutedBrush}" StrokeThickness="1.8"
+                      StrokeLineCap="Round" StrokeJoin="Round" />
+              </Canvas>
+              <TextBlock Text="Solta una imagen aca" HorizontalAlignment="Center" FontWeight="Medium" />
+              <TextBlock Text="o hace clic para elegirla" Classes="muted" HorizontalAlignment="Center" />
+            </StackPanel>
+
+            <Border Grid.Column="0" Width="96" Height="96" CornerRadius="{DynamicResource RadiusMd}"
+                    Background="{DynamicResource FraguaFieldBrush}" ClipToBounds="True"
+                    IsVisible="{Binding HasSource}" Margin="0,0,18,0">
+              <Image Source="{Binding SourcePreview}" Stretch="UniformToFill" IsVisible="{Binding HasSourcePreview}" />
+            </Border>
+
+            <StackPanel Grid.Column="1" Spacing="6" IsVisible="{Binding HasSource}"
+                        VerticalAlignment="Center" MinWidth="0">
+              <TextBlock Text="{Binding SourcePath}" TextTrimming="CharacterEllipsis"
+                         MaxLines="1" FontWeight="Medium" />
+              <StackPanel Orientation="Horizontal" Spacing="12">
+                <TextBlock Classes="muted">
+                  <Run Text="{Binding SourceAsset.WidthPixels}" />
+                  <Run Text="×" />
+                  <Run Text="{Binding SourceAsset.HeightPixels}" />
+                  <Run Text="px" />
+                </TextBlock>
+                <TextBlock Classes="muted"
+                           Text="{Binding SourceAsset.SizeBytes, Converter={StaticResource ByteSize}}" />
+              </StackPanel>
+            </StackPanel>
+
+            <Button Grid.Column="2" Classes="ghost" Content="Elegir..." Click="OnBrowseClick"
+                    VerticalAlignment="Center" />
+          </Grid>
+        </Border>
+
+        <Border Classes="panel" Padding="20">
+          <StackPanel Spacing="14">
+            <StackPanel Spacing="4">
+              <TextBlock Text="Tamanos generados" Classes="eyebrow" />
+              <TextBlock Classes="muted" TextWrapping="Wrap"
+                         Text="16, 32, 48, 64, 128, 256 y 512 px en PNG. Si la imagen no es cuadrada, se centra sobre fondo transparente." />
+            </StackPanel>
+            <CheckBox IsChecked="{Binding IncludeIco}" Content="Incluir un .ico combinado (Windows)" />
+          </StackPanel>
+        </Border>
+
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <Button Classes="primary" Content="Generar iconos" Command="{Binding GenerateIconsCommand}"
+                  HorizontalAlignment="Left" IsEnabled="{Binding !IsGeneratingIcons}" />
+          <TextBlock Text="Generando..." VerticalAlignment="Center" Classes="muted"
+                     IsVisible="{Binding IsGeneratingIcons}" />
+        </StackPanel>
+
+        <TextBlock Classes="muted" Foreground="{DynamicResource FraguaErrorBrush}"
+                   Text="{Binding IconGenerationError}"
+                   IsVisible="{Binding IconGenerationError, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
+                   TextWrapping="Wrap" />
+
+        <Border Classes="panel" Padding="20" IsVisible="{Binding HasGeneratedIcons}">
+          <StackPanel Spacing="10">
+            <TextBlock Text="Generado" Classes="eyebrow" />
+            <ItemsControl ItemsSource="{Binding GeneratedIconFiles}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                  <TextBlock Text="{Binding}" FontFamily="{DynamicResource FontMono}"
+                             FontSize="{DynamicResource TextSm}"
+                             Foreground="{DynamicResource FraguaTextMediumBrush}" Margin="0,3" />
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+
+      </StackPanel>
+
       <StackPanel Margin="32,28" Spacing="20" HorizontalAlignment="Stretch"
                   IsVisible="{Binding IsHistoryTab}">
         <Grid ColumnDefinitions="*,Auto">
@@ -685,7 +791,7 @@
             <StackPanel Orientation="Horizontal" Spacing="20">
               <Image Source="avares://Fragua.App/Assets/Icons/fragua-lockup.png" Width="140"
                      HorizontalAlignment="Left" />
-              <TextBlock Text="v0.4.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
+              <TextBlock Text="v0.5.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
             </StackPanel>
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
             <TextBlock Text="Disenado y desarrollado por Fernando Rodriguez, 2026." TextWrapping="Wrap" />

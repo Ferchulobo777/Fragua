@@ -2,6 +2,7 @@ using Fragua.App.Data;
 using Fragua.App.Models;
 using Fragua.App.ViewModels;
 using Fragua.Core;
+using Fragua.Core.Operations;
 using Fragua.Imaging;
 using Fragua.Tests.Fixtures;
 
@@ -41,7 +42,7 @@ public sealed class BatchViewModelTests : IDisposable
             new NullBackgroundRemover(), modelProvider,
             new MagickImageVectorizer(),
             new NullImageUpscaler(), upscaleModelProvider,
-            database);
+            database, new MagickIconSetGenerator());
     }
 
     [Fact]

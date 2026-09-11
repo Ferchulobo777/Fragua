@@ -29,6 +29,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     private readonly IIconSetGenerator _iconSetGenerator;
     private readonly IWatermarker _watermarker;
     private readonly IMetadataService _metadataService;
+    private readonly IColorPaletteExtractor _paletteExtractor;
 
     public ConvertViewModel(
         ImagePipeline pipeline,
@@ -42,7 +43,8 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         FraguaDatabase database,
         IIconSetGenerator iconSetGenerator,
         IWatermarker watermarker,
-        IMetadataService metadataService)
+        IMetadataService metadataService,
+        IColorPaletteExtractor paletteExtractor)
     {
         _pipeline = pipeline;
         _resizer = resizer;
@@ -56,6 +58,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         _iconSetGenerator = iconSetGenerator;
         _watermarker = watermarker;
         _metadataService = metadataService;
+        _paletteExtractor = paletteExtractor;
 
         LoadHistoryFromDatabase();
         LoadPresetsFromDatabase();
@@ -365,6 +368,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     public bool IsBatchTab => ActiveTab == AppTab.Batch;
     public bool IsIconsTab => ActiveTab == AppTab.Icons;
     public bool IsMetadataTab => ActiveTab == AppTab.Metadata;
+    public bool IsPaletteTab => ActiveTab == AppTab.Palette;
     public bool IsHistoryTab => ActiveTab == AppTab.History;
     public bool IsAboutTab => ActiveTab == AppTab.About;
 
@@ -374,12 +378,17 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(IsBatchTab));
         OnPropertyChanged(nameof(IsIconsTab));
         OnPropertyChanged(nameof(IsMetadataTab));
+        OnPropertyChanged(nameof(IsPaletteTab));
         OnPropertyChanged(nameof(IsHistoryTab));
         OnPropertyChanged(nameof(IsAboutTab));
 
         if (value == AppTab.Metadata)
         {
             await RefreshMetadataFieldsAsync();
+        }
+        else if (value == AppTab.Palette)
+        {
+            await RefreshPaletteAsync();
         }
     }
 
@@ -435,6 +444,16 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         {
             MetadataFields.Clear();
             OnPropertyChanged(nameof(HasMetadataFields));
+        }
+
+        if (IsPaletteTab)
+        {
+            _ = RefreshPaletteAsync();
+        }
+        else
+        {
+            PaletteColors.Clear();
+            OnPropertyChanged(nameof(HasPaletteColors));
         }
     }
 
@@ -1132,6 +1151,67 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         }
 
         RemoveSelectedMetadataCommand.NotifyCanExecuteChanged();
+    }
+
+    // --- Paleta: colores dominantes de la imagen cargada, ignorando fondo
+    // transparente (el caso mas comun en logos). Sin IA, pura cuantizacion
+    // con Magick.NET. ---
+
+    public ObservableCollection<PaletteColorItem> PaletteColors { get; } = [];
+
+    public bool HasPaletteColors => PaletteColors.Count > 0;
+
+    [ObservableProperty]
+    private bool _isExtractingPalette;
+
+    [ObservableProperty]
+    private string? _paletteError;
+
+    [ObservableProperty]
+    private string? _paletteStatusMessage;
+
+    [ObservableProperty]
+    private int _paletteColorCount = 6;
+
+    private async Task RefreshPaletteAsync()
+    {
+        PaletteColors.Clear();
+        PaletteError = null;
+        PaletteStatusMessage = null;
+        OnPropertyChanged(nameof(HasPaletteColors));
+
+        if (SourceAsset is null)
+        {
+            return;
+        }
+
+        IsExtractingPalette = true;
+        try
+        {
+            var colors = await _paletteExtractor.ExtractAsync(SourceAsset, PaletteColorCount, CancellationToken.None);
+            foreach (var color in colors)
+            {
+                PaletteColors.Add(new PaletteColorItem(color.Hex, color.Percentage));
+            }
+
+            OnPropertyChanged(nameof(HasPaletteColors));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            PaletteError = "No se pudo leer la imagen para sacar la paleta.";
+        }
+        finally
+        {
+            IsExtractingPalette = false;
+        }
+    }
+
+    async partial void OnPaletteColorCountChanged(int value)
+    {
+        if (IsPaletteTab)
+        {
+            await RefreshPaletteAsync();
+        }
     }
 
     /// <summary>

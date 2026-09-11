@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Fragua.App.ViewModels;
@@ -90,5 +91,22 @@ public partial class MainWindow : Window
             // Archivo que no es una imagen valida: se ignora en silencio en
             // esta primera version, en vez de reventar la ventana.
         }
+    }
+
+    private async void OnCopyHexClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string hex } || DataContext is not ConvertViewModel vm)
+        {
+            return;
+        }
+
+        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+        if (clipboard is null)
+        {
+            return;
+        }
+
+        await clipboard.SetTextAsync(hex);
+        vm.PaletteStatusMessage = $"Copiado {hex} al portapapeles.";
     }
 }

@@ -42,7 +42,8 @@ public sealed class BatchViewModelTests : IDisposable
             new NullBackgroundRemover(), modelProvider,
             new MagickImageVectorizer(),
             new NullImageUpscaler(), upscaleModelProvider,
-            database, new MagickIconSetGenerator(), new MagickWatermarker(), new MagickMetadataService());
+            database, new MagickIconSetGenerator(), new MagickWatermarker(), new MagickMetadataService(),
+            new MagickColorPaletteExtractor());
     }
 
     [Fact]

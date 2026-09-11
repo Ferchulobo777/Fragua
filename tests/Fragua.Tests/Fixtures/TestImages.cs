@@ -92,4 +92,51 @@ internal static class TestImages
 
         return path;
     }
+
+    /// <summary>
+    /// Tres franjas de color solido con proporciones exactas conocidas
+    /// (50/30/20%), para verificar que la extraccion de paleta devuelve
+    /// esos mismos porcentajes, no una aproximacion cualquiera.
+    /// </summary>
+    public static string CreateThreeColorBands(string? directory = null)
+    {
+        var dir = directory ?? Path.Combine(Path.GetTempPath(), "fragua-tests");
+        Directory.CreateDirectory(dir);
+        var path = Path.Combine(dir, $"fixture_{Guid.NewGuid():N}.png");
+
+        using var image = new MagickImage(MagickColors.White, 1000, 1000);
+        var drawables = new Drawables()
+            .FillColor(new MagickColor("#1B3A8F"))
+            .Rectangle(0, 0, 999, 499)
+            .FillColor(new MagickColor("#C0392B"))
+            .Rectangle(0, 500, 999, 799)
+            .FillColor(new MagickColor("#27AE60"))
+            .Rectangle(0, 800, 999, 999);
+        drawables.Draw(image);
+        image.Write(path, MagickFormat.Png);
+
+        return path;
+    }
+
+    /// <summary>
+    /// Mitad transparente, mitad de un color solido. El caso mas comun de
+    /// verdad (un logo con fondo transparente) donde contar la
+    /// transparencia como "color negro" da un resultado enganoso.
+    /// </summary>
+    public static string CreateHalfTransparentHalfSolid(string? directory = null)
+    {
+        var dir = directory ?? Path.Combine(Path.GetTempPath(), "fragua-tests");
+        Directory.CreateDirectory(dir);
+        var path = Path.Combine(dir, $"fixture_{Guid.NewGuid():N}.png");
+
+        using var image = new MagickImage(MagickColors.Transparent, 400, 400);
+        image.HasAlpha = true;
+        var drawables = new Drawables()
+            .FillColor(new MagickColor("#2878C8"))
+            .Rectangle(200, 0, 399, 399);
+        drawables.Draw(image);
+        image.Write(path, MagickFormat.Png);
+
+        return path;
+    }
 }

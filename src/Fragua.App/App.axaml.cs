@@ -64,6 +64,7 @@ public partial class App : Application
         services.AddSingleton<IIconSetGenerator, MagickIconSetGenerator>();
         services.AddSingleton<IWatermarker, MagickWatermarker>();
         services.AddSingleton<IMetadataService, MagickMetadataService>();
+        services.AddSingleton<IColorPaletteExtractor, MagickColorPaletteExtractor>();
         services.AddTransient<ConvertViewModel>();
 
         return services.BuildServiceProvider();

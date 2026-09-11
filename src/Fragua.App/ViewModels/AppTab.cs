@@ -6,6 +6,7 @@ public enum AppTab
     Batch,
     Icons,
     Metadata,
+    Palette,
     History,
     About,
 }

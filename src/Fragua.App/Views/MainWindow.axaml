@@ -94,6 +94,21 @@
             </StackPanel>
           </Button>
 
+          <Button Classes.active="{Binding IsPaletteTab}" Classes="nav"
+                  Command="{Binding GoToTabCommand}" CommandParameter="{x:Static vm:AppTab.Palette}">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <Canvas Width="16" Height="16" VerticalAlignment="Center">
+                <Ellipse Canvas.Left="1" Canvas.Top="3" Width="7" Height="7"
+                         Fill="{DynamicResource FraguaTextMutedBrush}" Opacity="0.9" />
+                <Ellipse Canvas.Left="8" Canvas.Top="3" Width="7" Height="7"
+                         Fill="{DynamicResource FraguaTextMutedBrush}" Opacity="0.55" />
+                <Ellipse Canvas.Left="4.5" Canvas.Top="8.5" Width="7" Height="7"
+                         Fill="{DynamicResource FraguaTextMutedBrush}" Opacity="0.3" />
+              </Canvas>
+              <TextBlock Text="Paleta" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+
           <Button Classes.active="{Binding IsHistoryTab}" Classes="nav"
                   Command="{Binding GoToTabCommand}" CommandParameter="{x:Static vm:AppTab.History}">
             <StackPanel Orientation="Horizontal" Spacing="10">
@@ -121,7 +136,7 @@
           </Button>
         </StackPanel>
 
-        <TextBlock Grid.Row="2" Text="v0.8.1" Classes="muted" FontSize="{DynamicResource TextXs}"
+        <TextBlock Grid.Row="2" Text="v0.9.0" Classes="muted" FontSize="{DynamicResource TextXs}"
                    Margin="10,0,0,0" />
       </Grid>
     </Border>
@@ -936,6 +951,80 @@
 
       </StackPanel>
 
+      <!-- Pestana Paleta: colores dominantes de la imagen cargada, ignorando
+           pixeles transparentes para no contar "negro" falso en logos con
+           fondo transparente. Misma imagen cargada que las demas pestanas. -->
+      <StackPanel Margin="32,28" Spacing="20" HorizontalAlignment="Stretch" MaxWidth="760"
+                  IsVisible="{Binding IsPaletteTab}">
+
+        <StackPanel Spacing="4">
+          <TextBlock Text="Paleta" Classes="heading" />
+          <TextBlock Text="Los colores dominantes de la imagen cargada, de mas a menos presencia."
+                     Classes="muted" />
+        </StackPanel>
+
+        <Border Classes="panel" Padding="28" IsVisible="{Binding !HasSource}">
+          <StackPanel Spacing="8" HorizontalAlignment="Center">
+            <TextBlock Text="Todavia no cargaste una imagen" HorizontalAlignment="Center" FontWeight="Medium" />
+            <TextBlock Text="Cargala en Convertir o Lotes para sacarle la paleta." Classes="muted"
+                       HorizontalAlignment="Center" />
+          </StackPanel>
+        </Border>
+
+        <StackPanel Spacing="16" IsVisible="{Binding HasSource}">
+          <TextBlock Text="{Binding SourcePath}" TextTrimming="CharacterEllipsis" MaxLines="1" Classes="muted" />
+
+          <StackPanel Spacing="10">
+            <TextBlock Text="Cantidad de colores" />
+            <Grid ColumnDefinitions="*,Auto" Width="380" HorizontalAlignment="Left">
+              <Slider Grid.Column="0" Minimum="2" Maximum="12" Value="{Binding PaletteColorCount}"
+                      VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="{Binding PaletteColorCount}" FontFamily="{DynamicResource FontMono}"
+                         VerticalAlignment="Center" Margin="10,0,0,0" Width="30" TextAlignment="Right" />
+            </Grid>
+          </StackPanel>
+
+          <TextBlock Text="Sacando paleta..." Classes="muted" IsVisible="{Binding IsExtractingPalette}" />
+
+          <Border Classes="panel" Padding="28" IsVisible="{Binding !IsExtractingPalette}">
+            <StackPanel Spacing="16">
+              <StackPanel Spacing="10" IsVisible="{Binding !HasPaletteColors}">
+                <TextBlock Text="No se pudo sacar una paleta de esta imagen." Classes="muted" HorizontalAlignment="Center" />
+              </StackPanel>
+
+              <ItemsControl ItemsSource="{Binding PaletteColors}" IsVisible="{Binding HasPaletteColors}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="models:PaletteColorItem">
+                    <Grid ColumnDefinitions="Auto,Auto,*,Auto" Margin="0,6" ColumnSpacing="14">
+                      <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8"
+                              Background="{Binding Brush}" BorderBrush="{DynamicResource FraguaLineBrush}"
+                              BorderThickness="1" />
+                      <TextBlock Grid.Column="1" Text="{Binding Hex}" FontFamily="{DynamicResource FontMono}"
+                                 VerticalAlignment="Center" Width="90" />
+                      <TextBlock Grid.Column="2" Text="{Binding PercentageText}" Classes="muted"
+                                 VerticalAlignment="Center" FontFamily="{DynamicResource FontMono}" />
+                      <Button Grid.Column="3" Classes="ghost" Content="Copiar" Tag="{Binding Hex}"
+                              Click="OnCopyHexClick" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+
+          <TextBlock Classes="muted" Foreground="{DynamicResource FraguaErrorBrush}"
+                     Text="{Binding PaletteError}"
+                     IsVisible="{Binding PaletteError, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
+                     TextWrapping="Wrap" />
+
+          <TextBlock Classes="muted" Foreground="{DynamicResource FraguaSuccessBrush}"
+                     Text="{Binding PaletteStatusMessage}"
+                     IsVisible="{Binding PaletteStatusMessage, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+
+      </StackPanel>
+
       <StackPanel Margin="32,28" Spacing="20" HorizontalAlignment="Stretch"
                   IsVisible="{Binding IsHistoryTab}">
         <Grid ColumnDefinitions="*,Auto">
@@ -994,7 +1083,7 @@
             <StackPanel Orientation="Horizontal" Spacing="20">
               <Image Source="avares://Fragua.App/Assets/Icons/fragua-lockup.png" Width="140"
                      HorizontalAlignment="Left" />
-              <TextBlock Text="v0.8.1" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
+              <TextBlock Text="v0.9.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
             </StackPanel>
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
             <TextBlock Text="Disenado y desarrollado por Fernando Rodriguez, 2026." TextWrapping="Wrap" />

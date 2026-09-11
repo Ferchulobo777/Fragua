@@ -109,6 +109,23 @@
             </StackPanel>
           </Button>
 
+          <Button Classes.active="{Binding IsCollageTab}" Classes="nav"
+                  Command="{Binding GoToTabCommand}" CommandParameter="{x:Static vm:AppTab.Collage}">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <Canvas Width="16" Height="16" VerticalAlignment="Center">
+                <Rectangle Canvas.Left="1" Canvas.Top="1" Width="6" Height="6"
+                           Fill="{DynamicResource FraguaTextMutedBrush}" Opacity="0.9" />
+                <Rectangle Canvas.Left="9" Canvas.Top="1" Width="6" Height="6"
+                           Fill="{DynamicResource FraguaTextMutedBrush}" Opacity="0.55" />
+                <Rectangle Canvas.Left="1" Canvas.Top="9" Width="6" Height="6"
+                           Fill="{DynamicResource FraguaTextMutedBrush}" Opacity="0.55" />
+                <Rectangle Canvas.Left="9" Canvas.Top="9" Width="6" Height="6"
+                           Fill="{DynamicResource FraguaTextMutedBrush}" Opacity="0.3" />
+              </Canvas>
+              <TextBlock Text="Collage" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+
           <Button Classes.active="{Binding IsHistoryTab}" Classes="nav"
                   Command="{Binding GoToTabCommand}" CommandParameter="{x:Static vm:AppTab.History}">
             <StackPanel Orientation="Horizontal" Spacing="10">
@@ -136,7 +153,7 @@
           </Button>
         </StackPanel>
 
-        <TextBlock Grid.Row="2" Text="v0.10.0" Classes="muted" FontSize="{DynamicResource TextXs}"
+        <TextBlock Grid.Row="2" Text="v0.11.0" Classes="muted" FontSize="{DynamicResource TextXs}"
                    Margin="10,0,0,0" />
       </Grid>
     </Border>
@@ -1089,6 +1106,125 @@
 
       </StackPanel>
 
+      <!-- Pestana Collage: junta varias imagenes sueltas en una sola
+           grilla. Con espaciado en 0 y recorte activado da un sprite sheet
+           bien pegado; sin recorte, un contacto que muestra cada foto
+           completa. -->
+      <StackPanel Margin="32,28" Spacing="20" HorizontalAlignment="Stretch" MaxWidth="760"
+                  IsVisible="{Binding IsCollageTab}">
+
+        <StackPanel Spacing="4">
+          <TextBlock Text="Collage" Classes="heading" />
+          <TextBlock Text="Junta varias imagenes en una sola grilla. Espaciado en 0 y Recortar activado da un sprite sheet."
+                     Classes="muted" TextWrapping="Wrap" />
+        </StackPanel>
+
+        <Border x:Name="CollageDropZone" Classes="dropzone" Padding="24" MinHeight="120">
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Grid.Column="0" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Canvas Width="30" Height="30" HorizontalAlignment="Center">
+                <Path Data="M15 22V9M9.5 14.5 15 9l5.5 5.5M6 24h18"
+                      Stroke="{DynamicResource FraguaTextMutedBrush}" StrokeThickness="1.8"
+                      StrokeLineCap="Round" StrokeJoin="Round" />
+              </Canvas>
+              <TextBlock Text="Solta varias imagenes aca" HorizontalAlignment="Center" FontWeight="Medium" />
+              <TextBlock Text="Se van sumando a la lista de abajo" Classes="muted" HorizontalAlignment="Center" />
+            </StackPanel>
+            <Button Grid.Column="1" Classes="ghost" Content="Elegir archivos..." Click="OnBrowseCollageFilesClick"
+                    VerticalAlignment="Center" />
+          </Grid>
+        </Border>
+
+        <Border Classes="panel" Padding="20" IsVisible="{Binding HasCollageSources}">
+          <StackPanel Spacing="14">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Grid.Column="0" Classes="eyebrow" VerticalAlignment="Center">
+                <Run Text="Imagenes cargadas (" /><Run Text="{Binding CollageSources.Count}" /><Run Text=")" />
+              </TextBlock>
+              <Button Grid.Column="1" Classes="ghost" Content="Vaciar lista" Command="{Binding ClearCollageSourcesCommand}" />
+            </Grid>
+
+            <Border Classes="panel" Padding="4" MaxHeight="200">
+              <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl ItemsSource="{Binding CollageSources}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:CollageSourceItem">
+                      <Grid ColumnDefinitions="*,Auto" Margin="12,6">
+                        <TextBlock Grid.Column="0" Text="{Binding FileName}" TextTrimming="CharacterEllipsis"
+                                   VerticalAlignment="Center" />
+                        <Button Grid.Column="1" Classes="ghost" Content="Quitar"
+                                Command="{Binding $parent[ItemsControl].((vm:ConvertViewModel)DataContext).RemoveCollageSourceCommand}"
+                                CommandParameter="{Binding}" />
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ScrollViewer>
+            </Border>
+          </StackPanel>
+        </Border>
+
+        <Border Classes="panel" Padding="20">
+          <StackPanel Spacing="18">
+            <TextBlock Text="Ajustes de grilla" Classes="eyebrow" />
+
+            <StackPanel Spacing="8">
+              <TextBlock Text="Columnas" />
+              <Grid ColumnDefinitions="*,Auto" Width="380" HorizontalAlignment="Left">
+                <Slider Grid.Column="0" Minimum="1" Maximum="8" Value="{Binding CollageColumns}"
+                        VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="{Binding CollageColumns}" FontFamily="{DynamicResource FontMono}"
+                           VerticalAlignment="Center" Margin="10,0,0,0" Width="30" TextAlignment="Right" />
+              </Grid>
+            </StackPanel>
+
+            <StackPanel Spacing="8">
+              <TextBlock Text="Tamano de celda" />
+              <Grid ColumnDefinitions="*,Auto" Width="380" HorizontalAlignment="Left">
+                <Slider Grid.Column="0" Minimum="100" Maximum="800" Value="{Binding CollageCellSize}"
+                        VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="{Binding CollageCellSize}" FontFamily="{DynamicResource FontMono}"
+                           VerticalAlignment="Center" Margin="10,0,0,0" Width="45" TextAlignment="Right" />
+              </Grid>
+            </StackPanel>
+
+            <StackPanel Spacing="8">
+              <TextBlock Text="Espaciado" />
+              <Grid ColumnDefinitions="*,Auto" Width="380" HorizontalAlignment="Left">
+                <Slider Grid.Column="0" Minimum="0" Maximum="60" Value="{Binding CollageSpacing}"
+                        VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="{Binding CollageSpacing}" FontFamily="{DynamicResource FontMono}"
+                           VerticalAlignment="Center" Margin="10,0,0,0" Width="45" TextAlignment="Right" />
+              </Grid>
+            </StackPanel>
+
+            <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
+
+            <CheckBox IsChecked="{Binding CollageCropToFill}" Content="Recortar para llenar cada celda" />
+            <TextBlock Classes="muted" TextWrapping="Wrap"
+                       Text="Si esta activado, cada imagen se recorta centrada para llenar su celda sin distorsionarse. Si no, se ve completa, con margen." />
+
+            <CheckBox IsChecked="{Binding CollageTransparentBackground}" Content="Fondo transparente" />
+          </StackPanel>
+        </Border>
+
+        <Button Classes="primary" Content="Crear collage" Command="{Binding ComposeCollageCommand}"
+                HorizontalAlignment="Left" IsEnabled="{Binding !IsComposingCollage}" />
+
+        <TextBlock Text="Armando el collage..." Classes="muted" IsVisible="{Binding IsComposingCollage}" />
+
+        <TextBlock Classes="muted" Foreground="{DynamicResource FraguaErrorBrush}"
+                   Text="{Binding CollageError}"
+                   IsVisible="{Binding CollageError, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
+                   TextWrapping="Wrap" />
+
+        <TextBlock Classes="muted" Foreground="{DynamicResource FraguaSuccessBrush}"
+                   Text="{Binding CollageStatusMessage}"
+                   IsVisible="{Binding CollageStatusMessage, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
+                   TextWrapping="Wrap" />
+
+      </StackPanel>
+
       <StackPanel Margin="32,28" Spacing="20" HorizontalAlignment="Stretch"
                   IsVisible="{Binding IsHistoryTab}">
         <Grid ColumnDefinitions="*,Auto">
@@ -1147,7 +1283,7 @@
             <StackPanel Orientation="Horizontal" Spacing="20">
               <Image Source="avares://Fragua.App/Assets/Icons/fragua-lockup.png" Width="140"
                      HorizontalAlignment="Left" />
-              <TextBlock Text="v0.10.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
+              <TextBlock Text="v0.11.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
             </StackPanel>
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
             <TextBlock Text="Disenado y desarrollado por Fernando Rodriguez, 2026." TextWrapping="Wrap" />

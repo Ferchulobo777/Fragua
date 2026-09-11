@@ -26,22 +26,60 @@ public partial class MainWindow : Window
         e.DragEffects = hasFile ? DragDropEffects.Copy : DragDropEffects.None;
         DropZone.Classes.Set("active", hasFile);
         IconsDropZone.Classes.Set("active", hasFile);
+        CollageDropZone.Classes.Set("active", hasFile);
     }
 
     private void OnDragLeave(object? sender, RoutedEventArgs e)
     {
         DropZone.Classes.Set("active", false);
         IconsDropZone.Classes.Set("active", false);
+        CollageDropZone.Classes.Set("active", false);
     }
 
     private async void OnDrop(object? sender, DragEventArgs e)
     {
         DropZone.Classes.Set("active", false);
         IconsDropZone.Classes.Set("active", false);
+        CollageDropZone.Classes.Set("active", false);
+
+        if (DataContext is ConvertViewModel { IsCollageTab: true } collageVm)
+        {
+            var files = e.DataTransfer.TryGetFiles();
+            if (files is not null)
+            {
+                var paths = files
+                    .Select(f => f.TryGetLocalPath())
+                    .Where(p => p is not null)
+                    .Cast<string>();
+                collageVm.AddCollageFiles(paths);
+            }
+
+            return;
+        }
 
         var file = e.DataTransfer.TryGetFile();
         var path = file?.TryGetLocalPath();
         await LoadFileAsync(path);
+    }
+
+    private async void OnBrowseCollageFilesClick(object? sender, RoutedEventArgs e)
+    {
+        var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Elegir imagenes para el collage",
+            AllowMultiple = true,
+        });
+
+        if (DataContext is not ConvertViewModel vm)
+        {
+            return;
+        }
+
+        var paths = files
+            .Select(f => f.TryGetLocalPath())
+            .Where(p => p is not null)
+            .Cast<string>();
+        vm.AddCollageFiles(paths);
     }
 
     private async void OnBrowseClick(object? sender, RoutedEventArgs e)

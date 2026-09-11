@@ -65,6 +65,7 @@ public partial class App : Application
         services.AddSingleton<IWatermarker, MagickWatermarker>();
         services.AddSingleton<IMetadataService, MagickMetadataService>();
         services.AddSingleton<IColorPaletteExtractor, MagickColorPaletteExtractor>();
+        services.AddSingleton<ICollageComposer, MagickCollageComposer>();
         services.AddTransient<ConvertViewModel>();
 
         return services.BuildServiceProvider();

@@ -30,6 +30,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     private readonly IWatermarker _watermarker;
     private readonly IMetadataService _metadataService;
     private readonly IColorPaletteExtractor _paletteExtractor;
+    private readonly ICollageComposer _collageComposer;
 
     public ConvertViewModel(
         ImagePipeline pipeline,
@@ -44,7 +45,8 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         IIconSetGenerator iconSetGenerator,
         IWatermarker watermarker,
         IMetadataService metadataService,
-        IColorPaletteExtractor paletteExtractor)
+        IColorPaletteExtractor paletteExtractor,
+        ICollageComposer collageComposer)
     {
         _pipeline = pipeline;
         _resizer = resizer;
@@ -59,6 +61,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         _watermarker = watermarker;
         _metadataService = metadataService;
         _paletteExtractor = paletteExtractor;
+        _collageComposer = collageComposer;
 
         LoadHistoryFromDatabase();
         LoadPresetsFromDatabase();
@@ -404,6 +407,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     public bool IsIconsTab => ActiveTab == AppTab.Icons;
     public bool IsMetadataTab => ActiveTab == AppTab.Metadata;
     public bool IsPaletteTab => ActiveTab == AppTab.Palette;
+    public bool IsCollageTab => ActiveTab == AppTab.Collage;
     public bool IsHistoryTab => ActiveTab == AppTab.History;
     public bool IsAboutTab => ActiveTab == AppTab.About;
 
@@ -414,6 +418,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(IsIconsTab));
         OnPropertyChanged(nameof(IsMetadataTab));
         OnPropertyChanged(nameof(IsPaletteTab));
+        OnPropertyChanged(nameof(IsCollageTab));
         OnPropertyChanged(nameof(IsHistoryTab));
         OnPropertyChanged(nameof(IsAboutTab));
 
@@ -1248,6 +1253,107 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
             await RefreshPaletteAsync();
         }
     }
+
+    // --- Collage: junta varias imagenes sueltas en una sola grilla. Con
+    // espaciado en 0 y recorte activado da un sprite sheet bien pegado; con
+    // espaciado y sin recorte, un collage tipo contacto que muestra cada
+    // foto completa. ---
+
+    public ObservableCollection<CollageSourceItem> CollageSources { get; } = [];
+
+    public bool HasCollageSources => CollageSources.Count > 0;
+
+    [ObservableProperty]
+    private int _collageColumns = 3;
+
+    [ObservableProperty]
+    private int _collageCellSize = 320;
+
+    [ObservableProperty]
+    private int _collageSpacing = 12;
+
+    [ObservableProperty]
+    private bool _collageCropToFill = true;
+
+    [ObservableProperty]
+    private bool _collageTransparentBackground = true;
+
+    [ObservableProperty]
+    private bool _isComposingCollage;
+
+    [ObservableProperty]
+    private string? _collageError;
+
+    [ObservableProperty]
+    private string? _collageStatusMessage;
+
+    public void AddCollageFiles(IEnumerable<string> paths)
+    {
+        var existing = new HashSet<string>(CollageSources.Select(s => s.FullPath));
+        foreach (var path in paths)
+        {
+            if (existing.Add(path))
+            {
+                CollageSources.Add(new CollageSourceItem(path));
+            }
+        }
+
+        OnPropertyChanged(nameof(HasCollageSources));
+        ComposeCollageCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand]
+    private void RemoveCollageSource(CollageSourceItem item)
+    {
+        CollageSources.Remove(item);
+        OnPropertyChanged(nameof(HasCollageSources));
+        ComposeCollageCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand]
+    private void ClearCollageSources()
+    {
+        CollageSources.Clear();
+        CollageStatusMessage = null;
+        OnPropertyChanged(nameof(HasCollageSources));
+        ComposeCollageCommand.NotifyCanExecuteChanged();
+    }
+
+    private bool CanComposeCollage() => CollageSources.Count >= 2 && !IsComposingCollage;
+
+    [RelayCommand(CanExecute = nameof(CanComposeCollage))]
+    private async Task ComposeCollageAsync()
+    {
+        IsComposingCollage = true;
+        CollageError = null;
+        CollageStatusMessage = null;
+
+        try
+        {
+            var destinationDirectory = Path.Combine(
+                Path.GetDirectoryName(CollageSources[0].FullPath) ?? Directory.GetCurrentDirectory(), "Fragua");
+            var spec = new CollageSpec(
+                CollageSources.Select(s => s.FullPath).ToList(),
+                CollageColumns,
+                (uint)CollageCellSize,
+                CollageSpacing,
+                CollageCropToFill,
+                CollageTransparentBackground);
+
+            var result = await _collageComposer.ComposeAsync(spec, destinationDirectory, CancellationToken.None);
+            CollageStatusMessage = $"Listo: {Path.GetFileName(result.OutputPath)} ({result.Width}x{result.Height}px) en {destinationDirectory}";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            CollageError = "No se pudo armar el collage.";
+        }
+        finally
+        {
+            IsComposingCollage = false;
+        }
+    }
+
+    partial void OnIsComposingCollageChanged(bool value) => ComposeCollageCommand.NotifyCanExecuteChanged();
 
     /// <summary>
     /// Si la ventana se cierra a mitad de una conversion o un lote, el token

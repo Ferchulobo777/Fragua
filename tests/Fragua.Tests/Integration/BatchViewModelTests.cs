@@ -43,7 +43,7 @@ public sealed class BatchViewModelTests : IDisposable
             new MagickImageVectorizer(),
             new NullImageUpscaler(), upscaleModelProvider,
             database, new MagickIconSetGenerator(), new MagickWatermarker(), new MagickMetadataService(),
-            new MagickColorPaletteExtractor());
+            new MagickColorPaletteExtractor(), new MagickCollageComposer());
     }
 
     [Fact]

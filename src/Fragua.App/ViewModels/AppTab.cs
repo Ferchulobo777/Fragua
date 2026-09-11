@@ -7,6 +7,7 @@ public enum AppTab
     Icons,
     Metadata,
     Palette,
+    Collage,
     History,
     About,
 }

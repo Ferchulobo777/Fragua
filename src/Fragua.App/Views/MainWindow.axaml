@@ -121,7 +121,7 @@
           </Button>
         </StackPanel>
 
-        <TextBlock Grid.Row="2" Text="v0.8.0" Classes="muted" FontSize="{DynamicResource TextXs}"
+        <TextBlock Grid.Row="2" Text="v0.8.1" Classes="muted" FontSize="{DynamicResource TextXs}"
                    Margin="10,0,0,0" />
       </Grid>
     </Border>
@@ -199,6 +199,8 @@
 
         <Border Classes="panel" Padding="20">
           <StackPanel Spacing="18">
+
+            <TextBlock Text="Ajustes basicos" Classes="eyebrow" />
 
             <StackPanel Spacing="10">
               <StackPanel Orientation="Horizontal" Spacing="8">
@@ -291,63 +293,73 @@
 
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
 
-            <StackPanel Spacing="10">
-              <CheckBox IsChecked="{Binding RemoveBackgroundEnabled}" Content="Quitar fondo (IA local)" />
-              <TextBlock Classes="muted" TextWrapping="Wrap"
-                         Text="Segmentacion local, sin nube. La primera vez descarga el modelo (43 MB) una sola vez." />
+            <!-- Agrupadas aparte: son las que tardan (descargan un modelo la
+                 primera vez, corren IA local) o cambian la salida por
+                 completo (Vectorizar). El fondo distinto marca que no pesan
+                 lo mismo que Redimensionar u Optimizar. -->
+            <Border Classes="panel" Background="{DynamicResource FraguaCanvasBrush}" Padding="16">
+              <StackPanel Spacing="14">
+                <TextBlock Text="Funciones con IA (mas lentas)" Classes="eyebrow" />
 
-              <StackPanel Spacing="6" IsVisible="{Binding IsDownloadingModel}">
-                <ProgressBar Minimum="0" Maximum="1" Value="{Binding ModelDownloadProgress}"
-                             HorizontalAlignment="Stretch" Height="8" />
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                  <TextBlock Text="Descargando modelo..." />
-                  <TextBlock Text="{Binding ModelDownloadProgress, Converter={StaticResource Percent}}"
-                             FontFamily="{DynamicResource FontMono}" Foreground="{DynamicResource FraguaEmberBrush}" />
+                <StackPanel Spacing="10">
+                  <CheckBox IsChecked="{Binding RemoveBackgroundEnabled}" Content="Quitar fondo (IA local)" />
+                  <TextBlock Classes="muted" TextWrapping="Wrap"
+                             Text="Segmentacion local, sin nube. La primera vez descarga el modelo (43 MB) una sola vez." />
+
+                  <StackPanel Spacing="6" IsVisible="{Binding IsDownloadingModel}">
+                    <ProgressBar Minimum="0" Maximum="1" Value="{Binding ModelDownloadProgress}"
+                                 HorizontalAlignment="Stretch" Height="8" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <TextBlock Text="Descargando modelo..." />
+                      <TextBlock Text="{Binding ModelDownloadProgress, Converter={StaticResource Percent}}"
+                                 FontFamily="{DynamicResource FontMono}" Foreground="{DynamicResource FraguaEmberBrush}" />
+                    </StackPanel>
+                  </StackPanel>
+
+                  <TextBlock Classes="muted" Foreground="{DynamicResource FraguaErrorBrush}"
+                             Text="{Binding ModelDownloadError}"
+                             IsVisible="{Binding ModelDownloadError, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
+                             TextWrapping="Wrap" />
+                </StackPanel>
+
+                <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
+
+                <StackPanel Spacing="10">
+                  <CheckBox IsChecked="{Binding VectorizeEnabled}" Content="Vectorizar (SVG)" />
+                  <Grid ColumnDefinitions="*,Auto" IsEnabled="{Binding VectorizeEnabled}" Width="380" HorizontalAlignment="Left">
+                    <Slider Grid.Column="0" Minimum="4" Maximum="64" Value="{Binding VectorizeColors}"
+                            VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1" Text="{Binding VectorizeColors}" FontFamily="{DynamicResource FontMono}"
+                               VerticalAlignment="Center" Margin="10,0,0,0" Width="30" TextAlignment="Right" />
+                  </Grid>
+                  <TextBlock Classes="muted" TextWrapping="Wrap"
+                             Text="Para logos y arte plano, no fotografias. Menos colores da un SVG mas limpio. Reemplaza el formato de salida y Optimizar." />
+                </StackPanel>
+
+                <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
+
+                <StackPanel Spacing="10">
+                  <CheckBox IsChecked="{Binding UpscaleEnabled}" Content="Mejorar calidad (IA local, x4)" />
+                  <TextBlock Classes="muted" TextWrapping="Wrap"
+                             Text="Super-resolucion local, sin nube. La primera vez descarga el modelo (unos 60 MB) una sola vez. En fotos grandes puede tardar varios minutos: corre en la CPU, sin acelerar por GPU." />
+
+                  <StackPanel Spacing="6" IsVisible="{Binding IsDownloadingUpscaleModel}">
+                    <ProgressBar Minimum="0" Maximum="1" Value="{Binding UpscaleModelDownloadProgress}"
+                                 HorizontalAlignment="Stretch" Height="8" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <TextBlock Text="Descargando modelo..." />
+                      <TextBlock Text="{Binding UpscaleModelDownloadProgress, Converter={StaticResource Percent}}"
+                                 FontFamily="{DynamicResource FontMono}" Foreground="{DynamicResource FraguaEmberBrush}" />
+                    </StackPanel>
+                  </StackPanel>
+
+                  <TextBlock Classes="muted" Foreground="{DynamicResource FraguaErrorBrush}"
+                             Text="{Binding UpscaleModelDownloadError}"
+                             IsVisible="{Binding UpscaleModelDownloadError, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
+                             TextWrapping="Wrap" />
                 </StackPanel>
               </StackPanel>
-
-              <TextBlock Classes="muted" Foreground="{DynamicResource FraguaErrorBrush}"
-                         Text="{Binding ModelDownloadError}"
-                         IsVisible="{Binding ModelDownloadError, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
-                         TextWrapping="Wrap" />
-            </StackPanel>
-
-            <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
-
-            <StackPanel Spacing="10">
-              <CheckBox IsChecked="{Binding VectorizeEnabled}" Content="Vectorizar (SVG)" />
-              <Grid ColumnDefinitions="*,Auto" IsEnabled="{Binding VectorizeEnabled}" Width="380" HorizontalAlignment="Left">
-                <Slider Grid.Column="0" Minimum="4" Maximum="64" Value="{Binding VectorizeColors}"
-                        VerticalAlignment="Center" />
-                <TextBlock Grid.Column="1" Text="{Binding VectorizeColors}" FontFamily="{DynamicResource FontMono}"
-                           VerticalAlignment="Center" Margin="10,0,0,0" Width="30" TextAlignment="Right" />
-              </Grid>
-              <TextBlock Classes="muted" TextWrapping="Wrap"
-                         Text="Para logos y arte plano, no fotografias. Menos colores da un SVG mas limpio. Reemplaza el formato de salida y Optimizar." />
-            </StackPanel>
-
-            <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
-
-            <StackPanel Spacing="10">
-              <CheckBox IsChecked="{Binding UpscaleEnabled}" Content="Mejorar calidad (IA local, x4)" />
-              <TextBlock Classes="muted" TextWrapping="Wrap"
-                         Text="Super-resolucion local, sin nube. La primera vez descarga el modelo (unos 60 MB) una sola vez. En fotos grandes puede tardar varios minutos: corre en la CPU, sin acelerar por GPU." />
-
-              <StackPanel Spacing="6" IsVisible="{Binding IsDownloadingUpscaleModel}">
-                <ProgressBar Minimum="0" Maximum="1" Value="{Binding UpscaleModelDownloadProgress}"
-                             HorizontalAlignment="Stretch" Height="8" />
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                  <TextBlock Text="Descargando modelo..." />
-                  <TextBlock Text="{Binding UpscaleModelDownloadProgress, Converter={StaticResource Percent}}"
-                             FontFamily="{DynamicResource FontMono}" Foreground="{DynamicResource FraguaEmberBrush}" />
-                </StackPanel>
-              </StackPanel>
-
-              <TextBlock Classes="muted" Foreground="{DynamicResource FraguaErrorBrush}"
-                         Text="{Binding UpscaleModelDownloadError}"
-                         IsVisible="{Binding UpscaleModelDownloadError, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
-                         TextWrapping="Wrap" />
-            </StackPanel>
+            </Border>
 
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
 
@@ -512,6 +524,7 @@
              configuraciones separadas que se puedan desincronizar. -->
         <Border Classes="panel" Padding="20">
           <StackPanel Spacing="18">
+            <TextBlock Text="Ajustes basicos" Classes="eyebrow" />
             <StackPanel Spacing="10">
               <CheckBox IsChecked="{Binding ResizeEnabled}" Content="Redimensionar" />
               <ItemsControl x:Name="ResizeModeListBatch" ItemsSource="{Binding ResizeModeOptions}" IsEnabled="{Binding ResizeEnabled}">
@@ -598,63 +611,69 @@
 
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
 
-            <StackPanel Spacing="10">
-              <CheckBox IsChecked="{Binding RemoveBackgroundEnabled}" Content="Quitar fondo (IA local)" />
-              <TextBlock Classes="muted" TextWrapping="Wrap"
-                         Text="Segmentacion local, sin nube. La primera vez descarga el modelo (43 MB) una sola vez." />
+            <Border Classes="panel" Background="{DynamicResource FraguaCanvasBrush}" Padding="16">
+              <StackPanel Spacing="14">
+                <TextBlock Text="Funciones con IA (mas lentas)" Classes="eyebrow" />
 
-              <StackPanel Spacing="6" IsVisible="{Binding IsDownloadingModel}">
-                <ProgressBar Minimum="0" Maximum="1" Value="{Binding ModelDownloadProgress}"
-                             HorizontalAlignment="Stretch" Height="8" />
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                  <TextBlock Text="Descargando modelo..." />
-                  <TextBlock Text="{Binding ModelDownloadProgress, Converter={StaticResource Percent}}"
-                             FontFamily="{DynamicResource FontMono}" Foreground="{DynamicResource FraguaEmberBrush}" />
+                <StackPanel Spacing="10">
+                  <CheckBox IsChecked="{Binding RemoveBackgroundEnabled}" Content="Quitar fondo (IA local)" />
+                  <TextBlock Classes="muted" TextWrapping="Wrap"
+                             Text="Segmentacion local, sin nube. La primera vez descarga el modelo (43 MB) una sola vez." />
+
+                  <StackPanel Spacing="6" IsVisible="{Binding IsDownloadingModel}">
+                    <ProgressBar Minimum="0" Maximum="1" Value="{Binding ModelDownloadProgress}"
+                                 HorizontalAlignment="Stretch" Height="8" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <TextBlock Text="Descargando modelo..." />
+                      <TextBlock Text="{Binding ModelDownloadProgress, Converter={StaticResource Percent}}"
+                                 FontFamily="{DynamicResource FontMono}" Foreground="{DynamicResource FraguaEmberBrush}" />
+                    </StackPanel>
+                  </StackPanel>
+
+                  <TextBlock Classes="muted" Foreground="{DynamicResource FraguaErrorBrush}"
+                             Text="{Binding ModelDownloadError}"
+                             IsVisible="{Binding ModelDownloadError, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
+                             TextWrapping="Wrap" />
+                </StackPanel>
+
+                <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
+
+                <StackPanel Spacing="10">
+                  <CheckBox IsChecked="{Binding VectorizeEnabled}" Content="Vectorizar (SVG)" />
+                  <Grid ColumnDefinitions="*,Auto" IsEnabled="{Binding VectorizeEnabled}" Width="380" HorizontalAlignment="Left">
+                    <Slider Grid.Column="0" Minimum="4" Maximum="64" Value="{Binding VectorizeColors}"
+                            VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1" Text="{Binding VectorizeColors}" FontFamily="{DynamicResource FontMono}"
+                               VerticalAlignment="Center" Margin="10,0,0,0" Width="30" TextAlignment="Right" />
+                  </Grid>
+                  <TextBlock Classes="muted" TextWrapping="Wrap"
+                             Text="Para logos y arte plano, no fotografias. Menos colores da un SVG mas limpio. Reemplaza el formato de salida y Optimizar." />
+                </StackPanel>
+
+                <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
+
+                <StackPanel Spacing="10">
+                  <CheckBox IsChecked="{Binding UpscaleEnabled}" Content="Mejorar calidad (IA local, x4)" />
+                  <TextBlock Classes="muted" TextWrapping="Wrap"
+                             Text="Super-resolucion local, sin nube. La primera vez descarga el modelo (unos 60 MB) una sola vez. En fotos grandes puede tardar varios minutos: corre en la CPU, sin acelerar por GPU." />
+
+                  <StackPanel Spacing="6" IsVisible="{Binding IsDownloadingUpscaleModel}">
+                    <ProgressBar Minimum="0" Maximum="1" Value="{Binding UpscaleModelDownloadProgress}"
+                                 HorizontalAlignment="Stretch" Height="8" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <TextBlock Text="Descargando modelo..." />
+                      <TextBlock Text="{Binding UpscaleModelDownloadProgress, Converter={StaticResource Percent}}"
+                                 FontFamily="{DynamicResource FontMono}" Foreground="{DynamicResource FraguaEmberBrush}" />
+                    </StackPanel>
+                  </StackPanel>
+
+                  <TextBlock Classes="muted" Foreground="{DynamicResource FraguaErrorBrush}"
+                             Text="{Binding UpscaleModelDownloadError}"
+                             IsVisible="{Binding UpscaleModelDownloadError, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
+                             TextWrapping="Wrap" />
                 </StackPanel>
               </StackPanel>
-
-              <TextBlock Classes="muted" Foreground="{DynamicResource FraguaErrorBrush}"
-                         Text="{Binding ModelDownloadError}"
-                         IsVisible="{Binding ModelDownloadError, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
-                         TextWrapping="Wrap" />
-            </StackPanel>
-
-            <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
-
-            <StackPanel Spacing="10">
-              <CheckBox IsChecked="{Binding VectorizeEnabled}" Content="Vectorizar (SVG)" />
-              <Grid ColumnDefinitions="*,Auto" IsEnabled="{Binding VectorizeEnabled}" Width="380" HorizontalAlignment="Left">
-                <Slider Grid.Column="0" Minimum="4" Maximum="64" Value="{Binding VectorizeColors}"
-                        VerticalAlignment="Center" />
-                <TextBlock Grid.Column="1" Text="{Binding VectorizeColors}" FontFamily="{DynamicResource FontMono}"
-                           VerticalAlignment="Center" Margin="10,0,0,0" Width="30" TextAlignment="Right" />
-              </Grid>
-              <TextBlock Classes="muted" TextWrapping="Wrap"
-                         Text="Para logos y arte plano, no fotografias. Menos colores da un SVG mas limpio. Reemplaza el formato de salida y Optimizar." />
-            </StackPanel>
-
-            <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
-
-            <StackPanel Spacing="10">
-              <CheckBox IsChecked="{Binding UpscaleEnabled}" Content="Mejorar calidad (IA local, x4)" />
-              <TextBlock Classes="muted" TextWrapping="Wrap"
-                         Text="Super-resolucion local, sin nube. La primera vez descarga el modelo (unos 60 MB) una sola vez. En fotos grandes puede tardar varios minutos: corre en la CPU, sin acelerar por GPU." />
-
-              <StackPanel Spacing="6" IsVisible="{Binding IsDownloadingUpscaleModel}">
-                <ProgressBar Minimum="0" Maximum="1" Value="{Binding UpscaleModelDownloadProgress}"
-                             HorizontalAlignment="Stretch" Height="8" />
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                  <TextBlock Text="Descargando modelo..." />
-                  <TextBlock Text="{Binding UpscaleModelDownloadProgress, Converter={StaticResource Percent}}"
-                             FontFamily="{DynamicResource FontMono}" Foreground="{DynamicResource FraguaEmberBrush}" />
-                </StackPanel>
-              </StackPanel>
-
-              <TextBlock Classes="muted" Foreground="{DynamicResource FraguaErrorBrush}"
-                         Text="{Binding UpscaleModelDownloadError}"
-                         IsVisible="{Binding UpscaleModelDownloadError, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
-                         TextWrapping="Wrap" />
-            </StackPanel>
+            </Border>
 
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
 
@@ -975,7 +994,7 @@
             <StackPanel Orientation="Horizontal" Spacing="20">
               <Image Source="avares://Fragua.App/Assets/Icons/fragua-lockup.png" Width="140"
                      HorizontalAlignment="Left" />
-              <TextBlock Text="v0.8.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
+              <TextBlock Text="v0.8.1" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
             </StackPanel>
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
             <TextBlock Text="Disenado y desarrollado por Fernando Rodriguez, 2026." TextWrapping="Wrap" />
@@ -1010,6 +1029,17 @@
                     </Canvas>
                   </Viewbox>
                   <TextBlock Text=".NET 10" />
+                </StackPanel>
+              </Border>
+
+              <Border Classes="techchip" Margin="0,0,8,8">
+                <StackPanel Orientation="Horizontal" Spacing="7">
+                  <Viewbox Width="14" Height="14">
+                    <Canvas Width="24" Height="24">
+                      <Path Fill="#005CED" Data="M23.0325 11.2963c-.0503 0-.1006 0-.1508.0126l-4.021-7.4387c.0754-.1383.1131-.289.1131-.4524 0-.5403-.4398-.9675-.9675-.9675-.2765 0-.5278.113-.7037.3015L9.286 1.156C9.2357.6785 8.821.3016 8.3184.3016c-.5277 0-.9675.4398-.9675.9675 0 .1634.0377.3141.113.4524l-6.245 8.9591c-.0753-.0251-.1633-.0377-.2513-.0377-.5403 0-.9675.4398-.9675.9676 0 .5403.4398.9675.9675.9675h.0377l3.3676 8.3309c-.0503.1257-.088.2639-.088.402 0 .5404.4398.9676.9676.9676.2764 0 .5277-.113.7036-.3015l10.1152.9926c.1005.4273.49.7288.9424.7288.5403 0 .9676-.4398.9676-.9675 0-.2388-.088-.465-.2262-.6283l5.1141-8.8712c.0503.0126.1005.0126.1634.0126.5403 0 .9675-.4398.9675-.9676 0-.5403-.4272-.98-.9675-.98zM17.2272 4.021c.1131.1508.2765.264.4524.3267l-1.533 11.5728c-.1005.0252-.1885.0503-.2764.1005L7.4513 8.708c.0251-.0754.0377-.1634.0377-.2514 0-.0628-.0126-.1256-.0126-.1884zm4.8754 8.5068l-5.177 3.556a1.105 1.105 0 0 0-.1256-.0753L18.3455 4.335h.0126l3.9456 7.288c-.1508.1759-.2388.3895-.2388.6408 0 .1005.0126.1885.0377.2638zM6.3832 7.5016c-.4649.0754-.8293.4775-.8293.955v.0628l-3.4555 2.0481 5.378-7.7026zm.3519 1.91c.1256-.0252.2513-.088.3518-.1634l8.356 7.2628c-.0377.113-.0628.2262-.0628.3518v.0503l-9.311 3.845c-.1382-.201-.3518-.3518-.6031-.402zm8.8963 8.1172c.1257.1382.3016.2513.5026.289l.465 4.046c-.201.1006-.3519.264-.4524.4524l-9.8136-.955zm1.1435.2136c.3267-.1633.5403-.49.5403-.867 0-.088-.0126-.1634-.0377-.2513l4.7372-3.2545-4.8 8.331zm.2513-14.3497l-9.889 4.31-.1131-.0755 1.2565-5.3906h.0377c.3393 0 .6409-.1759.8168-.4397l7.891 1.5706zM1.935 11.6105c0-.0629-.0126-.1257-.0126-.1885l3.9079-2.2995c.0754.0754.1633.1508.2638.201L4.8252 20.243l-3.2043-7.9036c.1885-.176.3142-.4398.3142-.7288Z" />
+                    </Canvas>
+                  </Viewbox>
+                  <TextBlock Text="ONNX Runtime" />
                 </StackPanel>
               </Border>
 

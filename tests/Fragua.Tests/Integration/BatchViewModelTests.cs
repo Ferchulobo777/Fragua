@@ -31,7 +31,7 @@ public sealed class BatchViewModelTests : IDisposable
     private ConvertViewModel CreateViewModel()
     {
         var loader = new MagickImageAssetLoader();
-        var resizer = new MagickImageResizer();
+        var resizer = new MagickImageResizer(new NullSubjectDetector());
         var writer = new MagickImageAssetWriter();
         var pipeline = new ImagePipeline(loader);
         var modelProvider = new SiluetaModelProvider(new HttpClient());

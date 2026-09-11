@@ -45,13 +45,17 @@ public partial class App : Application
         var services = new ServiceCollection();
 
         services.AddSingleton<IImageAssetLoader, MagickImageAssetLoader>();
-        services.AddSingleton<IImageResizer, MagickImageResizer>();
         services.AddSingleton<IImageAssetWriter, MagickImageAssetWriter>();
         services.AddSingleton<ImagePipeline>();
         services.AddSingleton<HttpClient>();
         services.AddSingleton<SiluetaModelProvider>();
         services.AddSingleton<IBackgroundRemover>(sp =>
             new OnnxBackgroundRemover(sp.GetRequiredService<SiluetaModelProvider>().ModelPath));
+        // Mismo modelo que Quitar fondo (silueta.onnx): ResizeMode.SmartCrop
+        // lo reusa para centrar el recorte sobre el sujeto detectado.
+        services.AddSingleton<ISubjectDetector>(sp =>
+            new OnnxSubjectDetector(sp.GetRequiredService<SiluetaModelProvider>().ModelPath));
+        services.AddSingleton<IImageResizer, MagickImageResizer>();
         services.AddSingleton<IImageVectorizer, MagickImageVectorizer>();
         services.AddSingleton<UpscaleModelProvider>();
         services.AddSingleton<IImageUpscaler>(sp =>

@@ -71,4 +71,25 @@ internal static class TestImages
 
         return path;
     }
+
+    /// <summary>
+    /// Un lienzo ancho con el sujeto corrido hacia un costado, no en el
+    /// centro. Sirve para probar recorte inteligente: un recorte al centro
+    /// geometrico cortaria el sujeto, uno que de verdad lo detecta no.
+    /// </summary>
+    public static string CreateOffCenterShape(string? directory = null)
+    {
+        var dir = directory ?? Path.Combine(Path.GetTempPath(), "fragua-tests");
+        Directory.CreateDirectory(dir);
+        var path = Path.Combine(dir, $"fixture_{Guid.NewGuid():N}.png");
+
+        using var image = new MagickImage(new MagickColor("#EDEDED"), 900, 500);
+        var drawables = new Drawables()
+            .FillColor(new MagickColor("#1B3A6B"))
+            .Circle(180, 250, 180, 110);
+        drawables.Draw(image);
+        image.Write(path, MagickFormat.Png);
+
+        return path;
+    }
 }

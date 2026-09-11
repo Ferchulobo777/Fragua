@@ -108,7 +108,7 @@
           </Button>
         </StackPanel>
 
-        <TextBlock Grid.Row="2" Text="v0.5.0" Classes="muted" FontSize="{DynamicResource TextXs}"
+        <TextBlock Grid.Row="2" Text="v0.6.0" Classes="muted" FontSize="{DynamicResource TextXs}"
                    Margin="10,0,0,0" />
       </Grid>
     </Border>
@@ -195,7 +195,7 @@
               <ItemsControl x:Name="ResizeModeList" ItemsSource="{Binding ResizeModeOptions}" IsEnabled="{Binding ResizeEnabled}">
                 <ItemsControl.ItemsPanel>
                   <ItemsPanelTemplate>
-                    <UniformGrid Columns="3" />
+                    <UniformGrid Columns="2" />
                   </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
@@ -214,6 +214,16 @@
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
+
+              <StackPanel Spacing="6" IsVisible="{Binding IsDownloadingModel}">
+                <ProgressBar Minimum="0" Maximum="1" Value="{Binding ModelDownloadProgress}"
+                             HorizontalAlignment="Stretch" Height="8" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBlock Text="Descargando modelo..." />
+                  <TextBlock Text="{Binding ModelDownloadProgress, Converter={StaticResource Percent}}"
+                             FontFamily="{DynamicResource FontMono}" Foreground="{DynamicResource FraguaEmberBrush}" />
+                </StackPanel>
+              </StackPanel>
 
               <Grid ColumnDefinitions="*,*" ColumnSpacing="10" IsEnabled="{Binding ResizeEnabled}">
                 <TextBox Grid.Column="0" Text="{Binding WidthText}"
@@ -457,7 +467,7 @@
               <ItemsControl x:Name="ResizeModeListBatch" ItemsSource="{Binding ResizeModeOptions}" IsEnabled="{Binding ResizeEnabled}">
                 <ItemsControl.ItemsPanel>
                   <ItemsPanelTemplate>
-                    <UniformGrid Columns="3" />
+                    <UniformGrid Columns="2" />
                   </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
@@ -476,6 +486,16 @@
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
+
+              <StackPanel Spacing="6" IsVisible="{Binding IsDownloadingModel}">
+                <ProgressBar Minimum="0" Maximum="1" Value="{Binding ModelDownloadProgress}"
+                             HorizontalAlignment="Stretch" Height="8" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBlock Text="Descargando modelo..." />
+                  <TextBlock Text="{Binding ModelDownloadProgress, Converter={StaticResource Percent}}"
+                             FontFamily="{DynamicResource FontMono}" Foreground="{DynamicResource FraguaEmberBrush}" />
+                </StackPanel>
+              </StackPanel>
 
               <Grid ColumnDefinitions="*,*" ColumnSpacing="10" IsEnabled="{Binding ResizeEnabled}">
                 <TextBox Grid.Column="0" Text="{Binding WidthText}"
@@ -791,7 +811,7 @@
             <StackPanel Orientation="Horizontal" Spacing="20">
               <Image Source="avares://Fragua.App/Assets/Icons/fragua-lockup.png" Width="140"
                      HorizontalAlignment="Left" />
-              <TextBlock Text="v0.5.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
+              <TextBlock Text="v0.6.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
             </StackPanel>
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
             <TextBlock Text="Disenado y desarrollado por Fernando Rodriguez, 2026." TextWrapping="Wrap" />

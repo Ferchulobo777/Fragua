@@ -141,7 +141,22 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
 
     async partial void OnRemoveBackgroundEnabledChanged(bool value)
     {
-        if (!value || IsModelReady || IsDownloadingModel)
+        if (!value)
+        {
+            return;
+        }
+
+        await EnsureSiluetaModelDownloadedAsync(onFailure: () => RemoveBackgroundEnabled = false);
+    }
+
+    /// <summary>
+    /// silueta.onnx (~43MB) lo usan dos features (Quitar fondo y el modo
+    /// Inteligente de Redimensionar): la primera que lo necesita lo baja,
+    /// la segunda ya lo encuentra cacheado.
+    /// </summary>
+    private async Task EnsureSiluetaModelDownloadedAsync(Action onFailure)
+    {
+        if (IsModelReady || IsDownloadingModel)
         {
             return;
         }
@@ -158,11 +173,11 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         }
         catch (Exception ex) when (ex is HttpRequestException or IOException or TaskCanceledException)
         {
-            // Sin red o el servidor no respondio: se avisa y se destilda el
-            // checkbox, no se deja la interfaz esperando algo que no va a
-            // llegar.
+            // Sin red o el servidor no respondio: se avisa y se revierte el
+            // estado que disparo la descarga, no se deja la interfaz
+            // esperando algo que no va a llegar.
             ModelDownloadError = "No se pudo descargar el modelo. Revisa la conexion e intenta de nuevo.";
-            RemoveBackgroundEnabled = false;
+            onFailure();
         }
         finally
         {
@@ -261,6 +276,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         new(ResizeMode.Fit, "FIT", "Ajustar", "Mantiene la proporcion"),
         new(ResizeMode.Exact, "EX", "Exacto", "Puede distorsionar"),
         new(ResizeMode.Percentage, "%", "Porcentaje", "Del tamano original"),
+        new(ResizeMode.SmartCrop, "IA", "Inteligente", "Centra el recorte en el sujeto"),
     ];
 
     [RelayCommand]
@@ -312,10 +328,15 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private void GoToTab(AppTab tab) => ActiveTab = tab;
 
-    partial void OnResizeModeChanged(ResizeMode value)
+    async partial void OnResizeModeChanged(ResizeMode value)
     {
         OnPropertyChanged(nameof(IsPercentageMode));
         SyncResizeModeSelection();
+
+        if (value == ResizeMode.SmartCrop)
+        {
+            await EnsureSiluetaModelDownloadedAsync(onFailure: () => ResizeMode = ResizeMode.Fit);
+        }
     }
 
     partial void OnSourceAssetChanged(ImageAsset? value)

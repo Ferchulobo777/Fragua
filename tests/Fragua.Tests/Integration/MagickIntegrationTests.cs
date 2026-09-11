@@ -42,7 +42,7 @@ public sealed class MagickIntegrationTests : IDisposable
     {
         var path = TestImages.CreateSolidPng(800, 600, _workDir);
         var loader = new MagickImageAssetLoader();
-        var resizer = new MagickImageResizer();
+        var resizer = new MagickImageResizer(new NullSubjectDetector());
         var asset = await loader.LoadAsync(path, CancellationToken.None);
 
         var resized = await resizer.ResizeAsync(
@@ -59,7 +59,7 @@ public sealed class MagickIntegrationTests : IDisposable
     {
         var path = TestImages.CreateSolidPng(800, 400, _workDir); // 2:1
         var loader = new MagickImageAssetLoader();
-        var resizer = new MagickImageResizer();
+        var resizer = new MagickImageResizer(new NullSubjectDetector());
         var asset = await loader.LoadAsync(path, CancellationToken.None);
 
         var resized = await resizer.ResizeAsync(
@@ -131,7 +131,7 @@ public sealed class MagickIntegrationTests : IDisposable
         var path = TestImages.CreateSolidPng(1000, 1000, _workDir);
         var destination = Path.Combine(_workDir, "salida");
         var loader = new MagickImageAssetLoader();
-        var resizer = new MagickImageResizer();
+        var resizer = new MagickImageResizer(new NullSubjectDetector());
         var writer = new MagickImageAssetWriter();
 
         var pipeline = new ImagePipeline(loader);

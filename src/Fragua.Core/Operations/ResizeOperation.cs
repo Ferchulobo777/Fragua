@@ -8,6 +8,12 @@ public enum ResizeMode
     Fit,
     /// <summary>Porcentaje del tamano original.</summary>
     Percentage,
+    /// <summary>
+    /// Ancho y alto exactos, como Exact, pero el recorte previo se centra
+    /// sobre el sujeto detectado por IA local en vez del centro geometrico
+    /// de la imagen. Usa el mismo modelo que Quitar fondo (silueta.onnx).
+    /// </summary>
+    SmartCrop,
 }
 
 /// <summary>

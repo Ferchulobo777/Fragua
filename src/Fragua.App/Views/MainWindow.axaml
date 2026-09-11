@@ -81,6 +81,19 @@
             </StackPanel>
           </Button>
 
+          <Button Classes.active="{Binding IsMetadataTab}" Classes="nav"
+                  Command="{Binding GoToTabCommand}" CommandParameter="{x:Static vm:AppTab.Metadata}">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <Canvas Width="16" Height="16" VerticalAlignment="Center">
+                <Path Data="M2 2h7l5 5-7 7-5-5z" Stroke="{DynamicResource FraguaTextMutedBrush}"
+                      StrokeThickness="1.4" StrokeJoin="Round" />
+                <Ellipse Canvas.Left="4.3" Canvas.Top="4.3" Width="1.8" Height="1.8"
+                         Fill="{DynamicResource FraguaTextMutedBrush}" />
+              </Canvas>
+              <TextBlock Text="Metadatos" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+
           <Button Classes.active="{Binding IsHistoryTab}" Classes="nav"
                   Command="{Binding GoToTabCommand}" CommandParameter="{x:Static vm:AppTab.History}">
             <StackPanel Orientation="Horizontal" Spacing="10">
@@ -108,7 +121,7 @@
           </Button>
         </StackPanel>
 
-        <TextBlock Grid.Row="2" Text="v0.7.0" Classes="muted" FontSize="{DynamicResource TextXs}"
+        <TextBlock Grid.Row="2" Text="v0.8.0" Classes="muted" FontSize="{DynamicResource TextXs}"
                    Margin="10,0,0,0" />
       </Grid>
     </Border>
@@ -827,6 +840,83 @@
 
       </StackPanel>
 
+      <!-- Pestana Metadatos: que datos EXIF trae la imagen cargada, y
+           cuales sacar, campo por campo (a diferencia de Optimizar, que
+           los saca todos de una). Usa la misma imagen cargada. -->
+      <StackPanel Margin="32,28" Spacing="20" HorizontalAlignment="Stretch" MaxWidth="760"
+                  IsVisible="{Binding IsMetadataTab}">
+
+        <StackPanel Spacing="4">
+          <TextBlock Text="Metadatos" Classes="heading" />
+          <TextBlock Text="Que datos EXIF trae la imagen cargada, y cuales sacar (ubicacion, camara, fecha)."
+                     Classes="muted" />
+        </StackPanel>
+
+        <Border Classes="panel" Padding="28" IsVisible="{Binding !HasSource}">
+          <StackPanel Spacing="8" HorizontalAlignment="Center">
+            <TextBlock Text="Todavia no cargaste una imagen" HorizontalAlignment="Center" FontWeight="Medium" />
+            <TextBlock Text="Cargala en Convertir o Lotes para ver sus metadatos aca." Classes="muted"
+                       HorizontalAlignment="Center" />
+          </StackPanel>
+        </Border>
+
+        <StackPanel Spacing="16" IsVisible="{Binding HasSource}">
+          <TextBlock Text="{Binding SourcePath}" TextTrimming="CharacterEllipsis" MaxLines="1" Classes="muted" />
+
+          <TextBlock Text="Leyendo metadatos..." Classes="muted" IsVisible="{Binding IsReadingMetadata}" />
+
+          <Border Classes="panel" Padding="28"
+                  IsVisible="{Binding !IsReadingMetadata}">
+            <StackPanel Spacing="16">
+              <StackPanel Spacing="10" IsVisible="{Binding !HasMetadataFields}">
+                <TextBlock Text="Esta imagen no tiene metadatos EXIF." Classes="muted" HorizontalAlignment="Center" />
+              </StackPanel>
+
+              <StackPanel Spacing="14" IsVisible="{Binding HasMetadataFields}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Button Classes="ghost" Content="Marcar todo" Command="{Binding SelectAllMetadataCommand}" />
+                  <Button Classes="ghost" Content="Desmarcar todo" Command="{Binding DeselectAllMetadataCommand}" />
+                </StackPanel>
+
+                <Border Classes="panel" Padding="4" MaxHeight="320">
+                  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl ItemsSource="{Binding MetadataFields}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="models:MetadataFieldItem">
+                          <Grid ColumnDefinitions="Auto,140,*" Margin="12,8" ColumnSpacing="12">
+                            <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected}" />
+                            <TextBlock Grid.Column="1" Text="{Binding Tag}" FontFamily="{DynamicResource FontMono}"
+                                       FontSize="{DynamicResource TextSm}" VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock Grid.Column="2" Text="{Binding Value}" Classes="muted"
+                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                          </Grid>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </ScrollViewer>
+                </Border>
+
+                <Button Classes="primary" Content="Sacar campos marcados"
+                        Command="{Binding RemoveSelectedMetadataCommand}"
+                        HorizontalAlignment="Left" IsEnabled="{Binding !IsRemovingMetadata}" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <TextBlock Classes="muted" Foreground="{DynamicResource FraguaErrorBrush}"
+                     Text="{Binding MetadataError}"
+                     IsVisible="{Binding MetadataError, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
+                     TextWrapping="Wrap" />
+
+          <TextBlock Classes="muted" Foreground="{DynamicResource FraguaSuccessBrush}"
+                     Text="{Binding MetadataStatusMessage}"
+                     IsVisible="{Binding MetadataStatusMessage, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+
+      </StackPanel>
+
       <StackPanel Margin="32,28" Spacing="20" HorizontalAlignment="Stretch"
                   IsVisible="{Binding IsHistoryTab}">
         <Grid ColumnDefinitions="*,Auto">
@@ -885,7 +975,7 @@
             <StackPanel Orientation="Horizontal" Spacing="20">
               <Image Source="avares://Fragua.App/Assets/Icons/fragua-lockup.png" Width="140"
                      HorizontalAlignment="Left" />
-              <TextBlock Text="v0.7.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
+              <TextBlock Text="v0.8.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
             </StackPanel>
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
             <TextBlock Text="Disenado y desarrollado por Fernando Rodriguez, 2026." TextWrapping="Wrap" />

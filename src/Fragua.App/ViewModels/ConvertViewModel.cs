@@ -28,6 +28,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     private readonly FraguaDatabase _database;
     private readonly IIconSetGenerator _iconSetGenerator;
     private readonly IWatermarker _watermarker;
+    private readonly IMetadataService _metadataService;
 
     public ConvertViewModel(
         ImagePipeline pipeline,
@@ -40,7 +41,8 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         UpscaleModelProvider upscaleModelProvider,
         FraguaDatabase database,
         IIconSetGenerator iconSetGenerator,
-        IWatermarker watermarker)
+        IWatermarker watermarker,
+        IMetadataService metadataService)
     {
         _pipeline = pipeline;
         _resizer = resizer;
@@ -53,6 +55,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         _database = database;
         _iconSetGenerator = iconSetGenerator;
         _watermarker = watermarker;
+        _metadataService = metadataService;
 
         LoadHistoryFromDatabase();
         LoadPresetsFromDatabase();
@@ -361,16 +364,23 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     public bool IsConvertTab => ActiveTab == AppTab.Convert;
     public bool IsBatchTab => ActiveTab == AppTab.Batch;
     public bool IsIconsTab => ActiveTab == AppTab.Icons;
+    public bool IsMetadataTab => ActiveTab == AppTab.Metadata;
     public bool IsHistoryTab => ActiveTab == AppTab.History;
     public bool IsAboutTab => ActiveTab == AppTab.About;
 
-    partial void OnActiveTabChanged(AppTab value)
+    async partial void OnActiveTabChanged(AppTab value)
     {
         OnPropertyChanged(nameof(IsConvertTab));
         OnPropertyChanged(nameof(IsBatchTab));
         OnPropertyChanged(nameof(IsIconsTab));
+        OnPropertyChanged(nameof(IsMetadataTab));
         OnPropertyChanged(nameof(IsHistoryTab));
         OnPropertyChanged(nameof(IsAboutTab));
+
+        if (value == AppTab.Metadata)
+        {
+            await RefreshMetadataFieldsAsync();
+        }
     }
 
     [RelayCommand]
@@ -416,6 +426,16 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         GeneratedIconFiles.Clear();
         IconGenerationError = null;
         OnPropertyChanged(nameof(HasGeneratedIcons));
+
+        if (IsMetadataTab)
+        {
+            _ = RefreshMetadataFieldsAsync();
+        }
+        else
+        {
+            MetadataFields.Clear();
+            OnPropertyChanged(nameof(HasMetadataFields));
+        }
     }
 
     private static readonly TimeSpan MinVisibleDuration = TimeSpan.FromMilliseconds(900);
@@ -989,6 +1009,130 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     }
 
     partial void OnIsGeneratingIconsChanged(bool value) => GenerateIconsCommand.NotifyCanExecuteChanged();
+
+    // --- Metadatos: a diferencia de Optimizar (que saca todo con Strip),
+    // esto deja ver que hay y elegir campo por campo. Usa la misma imagen
+    // cargada en el resto de la app. ---
+
+    public ObservableCollection<MetadataFieldItem> MetadataFields { get; } = [];
+
+    public bool HasMetadataFields => MetadataFields.Count > 0;
+
+    [ObservableProperty]
+    private bool _isReadingMetadata;
+
+    [ObservableProperty]
+    private bool _isRemovingMetadata;
+
+    partial void OnIsRemovingMetadataChanged(bool value) => RemoveSelectedMetadataCommand.NotifyCanExecuteChanged();
+
+    [ObservableProperty]
+    private string? _metadataError;
+
+    [ObservableProperty]
+    private string? _metadataStatusMessage;
+
+    private async Task RefreshMetadataFieldsAsync()
+    {
+        MetadataFields.Clear();
+        MetadataError = null;
+        MetadataStatusMessage = null;
+        OnPropertyChanged(nameof(HasMetadataFields));
+
+        if (SourceAsset is null)
+        {
+            return;
+        }
+
+        IsReadingMetadata = true;
+        try
+        {
+            var fields = await _metadataService.ReadAsync(SourceAsset, CancellationToken.None);
+            foreach (var field in fields)
+            {
+                MetadataFields.Add(new MetadataFieldItem(field.Tag, field.Value));
+            }
+
+            OnPropertyChanged(nameof(HasMetadataFields));
+            RemoveSelectedMetadataCommand.NotifyCanExecuteChanged();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            MetadataError = "No se pudo leer los metadatos de esta imagen.";
+        }
+        finally
+        {
+            IsReadingMetadata = false;
+        }
+    }
+
+    // No depende de si algun campo especifico esta tildado: eso es una
+    // propiedad de un item de la coleccion, no del ViewModel, y el toolkit
+    // no vuelve a evaluar CanExecute por cambios en objetos anidados. En
+    // vez de cablear esa notificacion, el comando simplemente no hace nada
+    // si nadie tildo un campo.
+    private bool CanRemoveSelectedMetadata() => !IsRemovingMetadata && HasMetadataFields;
+
+    [RelayCommand(CanExecute = nameof(CanRemoveSelectedMetadata))]
+    private async Task RemoveSelectedMetadataAsync()
+    {
+        if (SourcePath is null || SourceAsset is null)
+        {
+            return;
+        }
+
+        var tagsToRemove = MetadataFields.Where(f => f.IsSelected).Select(f => f.Tag).ToList();
+        if (tagsToRemove.Count == 0)
+        {
+            MetadataStatusMessage = "Marca al menos un campo para sacar.";
+            return;
+        }
+
+        IsRemovingMetadata = true;
+        MetadataError = null;
+        MetadataStatusMessage = null;
+
+        try
+        {
+            var destinationDirectory = Path.Combine(
+                Path.GetDirectoryName(SourcePath) ?? Directory.GetCurrentDirectory(), "Fragua");
+            var result = await _metadataService.RemoveFieldsAsync(
+                SourceAsset, tagsToRemove, destinationDirectory, CancellationToken.None);
+
+            MetadataStatusMessage = $"Guardado sin {tagsToRemove.Count} campo(s) en {Path.GetFileName(result.SourcePath)}.";
+            await RefreshMetadataFieldsAsync();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            MetadataError = "No se pudo escribir en la carpeta de destino.";
+        }
+        finally
+        {
+            IsRemovingMetadata = false;
+        }
+    }
+
+    [RelayCommand]
+    private void SelectAllMetadata()
+    {
+        foreach (var field in MetadataFields)
+        {
+            field.IsSelected = true;
+        }
+
+        RemoveSelectedMetadataCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand]
+    private void DeselectAllMetadata()
+    {
+        foreach (var field in MetadataFields)
+        {
+            field.IsSelected = false;
+        }
+
+        RemoveSelectedMetadataCommand.NotifyCanExecuteChanged();
+    }
 
     /// <summary>
     /// Si la ventana se cierra a mitad de una conversion o un lote, el token

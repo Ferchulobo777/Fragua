@@ -63,6 +63,7 @@ public partial class App : Application
         services.AddSingleton<FraguaDatabase>();
         services.AddSingleton<IIconSetGenerator, MagickIconSetGenerator>();
         services.AddSingleton<IWatermarker, MagickWatermarker>();
+        services.AddSingleton<IMetadataService, MagickMetadataService>();
         services.AddTransient<ConvertViewModel>();
 
         return services.BuildServiceProvider();

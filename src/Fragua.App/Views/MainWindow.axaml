@@ -94,7 +94,7 @@
           </Button>
         </StackPanel>
 
-        <TextBlock Grid.Row="2" Text="v0.3.0" Classes="muted" FontSize="{DynamicResource TextXs}"
+        <TextBlock Grid.Row="2" Text="v0.4.0" Classes="muted" FontSize="{DynamicResource TextXs}"
                    Margin="10,0,0,0" />
       </Grid>
     </Border>
@@ -104,7 +104,7 @@
      <Grid>
 
       <!-- Pestana Convertir -->
-      <StackPanel Margin="32,28" Spacing="20" HorizontalAlignment="Stretch"
+      <StackPanel Margin="32,28" Spacing="20" HorizontalAlignment="Stretch" MaxWidth="760"
                   IsVisible="{Binding IsConvertTab}">
 
         <StackPanel Spacing="4">
@@ -178,14 +178,35 @@
                 <CheckBox IsChecked="{Binding ResizeEnabled}" Content="Redimensionar" />
               </StackPanel>
 
-              <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10" IsEnabled="{Binding ResizeEnabled}">
-                <ComboBox Grid.Column="0" ItemsSource="{Binding AvailableResizeModes}"
-                          SelectedItem="{Binding ResizeMode}" HorizontalAlignment="Stretch" />
-                <TextBox Grid.Column="1" Text="{Binding WidthText}"
+              <ItemsControl x:Name="ResizeModeList" ItemsSource="{Binding ResizeModeOptions}" IsEnabled="{Binding ResizeEnabled}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <UniformGrid Columns="3" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="models:ResizeModeOption">
+                    <Button Classes="option-card" Classes.active="{Binding IsSelected}" Margin="3"
+                            Command="{Binding #ResizeModeList.((vm:ConvertViewModel)DataContext).SelectResizeModeCommand}"
+                            CommandParameter="{Binding}">
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Border Classes="option-badge"><TextBlock Text="{Binding Badge}" /></Border>
+                        <StackPanel Spacing="0">
+                          <TextBlock Text="{Binding Name}" FontWeight="Medium" FontSize="{DynamicResource TextSm}" />
+                          <TextBlock Text="{Binding Hint}" Classes="option-hint" />
+                        </StackPanel>
+                      </StackPanel>
+                    </Button>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="10" IsEnabled="{Binding ResizeEnabled}">
+                <TextBox Grid.Column="0" Text="{Binding WidthText}"
                          PlaceholderText="Ancho" IsVisible="{Binding !IsPercentageMode}" />
-                <TextBox Grid.Column="1" Text="{Binding WidthText}"
+                <TextBox Grid.Column="0" Text="{Binding WidthText}"
                          PlaceholderText="Porcentaje, ej. 50" IsVisible="{Binding IsPercentageMode}" />
-                <TextBox Grid.Column="2" Text="{Binding HeightText}" PlaceholderText="Alto"
+                <TextBox Grid.Column="1" Text="{Binding HeightText}" PlaceholderText="Alto"
                          IsVisible="{Binding !IsPercentageMode}" />
               </Grid>
             </StackPanel>
@@ -194,15 +215,35 @@
 
             <StackPanel Spacing="10" IsVisible="{Binding !VectorizeEnabled}">
               <TextBlock Text="Formato de salida" Classes="eyebrow" />
-              <ComboBox ItemsSource="{Binding AvailableFormats}" SelectedItem="{Binding TargetFormat}"
-                        HorizontalAlignment="Stretch" />
+              <ItemsControl x:Name="FormatOptionsList" ItemsSource="{Binding FormatOptions}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <UniformGrid Columns="2" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="models:FormatOption">
+                    <Button Classes="option-card" Classes.active="{Binding IsSelected}" Margin="3"
+                            Command="{Binding #FormatOptionsList.((vm:ConvertViewModel)DataContext).SelectFormatCommand}"
+                            CommandParameter="{Binding}">
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Border Classes="option-badge"><TextBlock Text="{Binding Badge}" /></Border>
+                        <StackPanel Spacing="0">
+                          <TextBlock Text="{Binding Name}" FontWeight="Medium" FontSize="{DynamicResource TextSm}" />
+                          <TextBlock Text="{Binding Hint}" Classes="option-hint" />
+                        </StackPanel>
+                      </StackPanel>
+                    </Button>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
             </StackPanel>
 
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
 
             <StackPanel Spacing="10" IsVisible="{Binding !VectorizeEnabled}">
               <CheckBox IsChecked="{Binding OptimizeEnabled}" Content="Optimizar" />
-              <Grid ColumnDefinitions="*,Auto" IsEnabled="{Binding OptimizeEnabled}">
+              <Grid ColumnDefinitions="*,Auto" IsEnabled="{Binding OptimizeEnabled}" Width="380" HorizontalAlignment="Left">
                 <Slider Grid.Column="0" Minimum="1" Maximum="100" Value="{Binding OptimizeQuality}"
                         VerticalAlignment="Center" />
                 <TextBlock Grid.Column="1" Text="{Binding OptimizeQuality}" FontFamily="{DynamicResource FontMono}"
@@ -238,7 +279,7 @@
 
             <StackPanel Spacing="10">
               <CheckBox IsChecked="{Binding VectorizeEnabled}" Content="Vectorizar (SVG)" />
-              <Grid ColumnDefinitions="*,Auto" IsEnabled="{Binding VectorizeEnabled}">
+              <Grid ColumnDefinitions="*,Auto" IsEnabled="{Binding VectorizeEnabled}" Width="380" HorizontalAlignment="Left">
                 <Slider Grid.Column="0" Minimum="4" Maximum="64" Value="{Binding VectorizeColors}"
                         VerticalAlignment="Center" />
                 <TextBlock Grid.Column="1" Text="{Binding VectorizeColors}" FontFamily="{DynamicResource FontMono}"
@@ -352,7 +393,7 @@
       <!-- Pestana Lotes: convierte todos los archivos de una carpeta con el
            mismo ajuste de redimension y formato de la pestana Convertir,
            corriendo sobre el mismo pipeline probado (RunBatchAsync). -->
-      <StackPanel Margin="32,28" Spacing="20" HorizontalAlignment="Stretch"
+      <StackPanel Margin="32,28" Spacing="20" HorizontalAlignment="Stretch" MaxWidth="760"
                   IsVisible="{Binding IsBatchTab}">
 
         <StackPanel Spacing="4">
@@ -399,29 +440,70 @@
           <StackPanel Spacing="18">
             <StackPanel Spacing="10">
               <CheckBox IsChecked="{Binding ResizeEnabled}" Content="Redimensionar" />
-              <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10" IsEnabled="{Binding ResizeEnabled}">
-                <ComboBox Grid.Column="0" ItemsSource="{Binding AvailableResizeModes}"
-                          SelectedItem="{Binding ResizeMode}" HorizontalAlignment="Stretch" />
-                <TextBox Grid.Column="1" Text="{Binding WidthText}"
+              <ItemsControl x:Name="ResizeModeListBatch" ItemsSource="{Binding ResizeModeOptions}" IsEnabled="{Binding ResizeEnabled}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <UniformGrid Columns="3" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="models:ResizeModeOption">
+                    <Button Classes="option-card" Classes.active="{Binding IsSelected}" Margin="3"
+                            Command="{Binding #ResizeModeListBatch.((vm:ConvertViewModel)DataContext).SelectResizeModeCommand}"
+                            CommandParameter="{Binding}">
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Border Classes="option-badge"><TextBlock Text="{Binding Badge}" /></Border>
+                        <StackPanel Spacing="0">
+                          <TextBlock Text="{Binding Name}" FontWeight="Medium" FontSize="{DynamicResource TextSm}" />
+                          <TextBlock Text="{Binding Hint}" Classes="option-hint" />
+                        </StackPanel>
+                      </StackPanel>
+                    </Button>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="10" IsEnabled="{Binding ResizeEnabled}">
+                <TextBox Grid.Column="0" Text="{Binding WidthText}"
                          PlaceholderText="Ancho" IsVisible="{Binding !IsPercentageMode}" />
-                <TextBox Grid.Column="1" Text="{Binding WidthText}"
+                <TextBox Grid.Column="0" Text="{Binding WidthText}"
                          PlaceholderText="Porcentaje, ej. 50" IsVisible="{Binding IsPercentageMode}" />
-                <TextBox Grid.Column="2" Text="{Binding HeightText}" PlaceholderText="Alto"
+                <TextBox Grid.Column="1" Text="{Binding HeightText}" PlaceholderText="Alto"
                          IsVisible="{Binding !IsPercentageMode}" />
               </Grid>
             </StackPanel>
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
             <StackPanel Spacing="10" IsVisible="{Binding !VectorizeEnabled}">
               <TextBlock Text="Formato de salida" Classes="eyebrow" />
-              <ComboBox ItemsSource="{Binding AvailableFormats}" SelectedItem="{Binding TargetFormat}"
-                        HorizontalAlignment="Stretch" />
+              <ItemsControl x:Name="FormatOptionsListBatch" ItemsSource="{Binding FormatOptions}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <UniformGrid Columns="2" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="models:FormatOption">
+                    <Button Classes="option-card" Classes.active="{Binding IsSelected}" Margin="3"
+                            Command="{Binding #FormatOptionsListBatch.((vm:ConvertViewModel)DataContext).SelectFormatCommand}"
+                            CommandParameter="{Binding}">
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Border Classes="option-badge"><TextBlock Text="{Binding Badge}" /></Border>
+                        <StackPanel Spacing="0">
+                          <TextBlock Text="{Binding Name}" FontWeight="Medium" FontSize="{DynamicResource TextSm}" />
+                          <TextBlock Text="{Binding Hint}" Classes="option-hint" />
+                        </StackPanel>
+                      </StackPanel>
+                    </Button>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
             </StackPanel>
 
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
 
             <StackPanel Spacing="10" IsVisible="{Binding !VectorizeEnabled}">
               <CheckBox IsChecked="{Binding OptimizeEnabled}" Content="Optimizar" />
-              <Grid ColumnDefinitions="*,Auto" IsEnabled="{Binding OptimizeEnabled}">
+              <Grid ColumnDefinitions="*,Auto" IsEnabled="{Binding OptimizeEnabled}" Width="380" HorizontalAlignment="Left">
                 <Slider Grid.Column="0" Minimum="1" Maximum="100" Value="{Binding OptimizeQuality}"
                         VerticalAlignment="Center" />
                 <TextBlock Grid.Column="1" Text="{Binding OptimizeQuality}" FontFamily="{DynamicResource FontMono}"
@@ -457,7 +539,7 @@
 
             <StackPanel Spacing="10">
               <CheckBox IsChecked="{Binding VectorizeEnabled}" Content="Vectorizar (SVG)" />
-              <Grid ColumnDefinitions="*,Auto" IsEnabled="{Binding VectorizeEnabled}">
+              <Grid ColumnDefinitions="*,Auto" IsEnabled="{Binding VectorizeEnabled}" Width="380" HorizontalAlignment="Left">
                 <Slider Grid.Column="0" Minimum="4" Maximum="64" Value="{Binding VectorizeColors}"
                         VerticalAlignment="Center" />
                 <TextBlock Grid.Column="1" Text="{Binding VectorizeColors}" FontFamily="{DynamicResource FontMono}"
@@ -550,7 +632,7 @@
         <Grid ColumnDefinitions="*,Auto">
           <StackPanel Grid.Column="0" Spacing="4">
             <TextBlock Text="Historial" Classes="heading" />
-            <TextBlock Classes="muted" Text="Lo que se convirtio en esta sesion. Todavia no queda guardado al cerrar la app." />
+            <TextBlock Classes="muted" Text="Lo que convertiste, guardado en este equipo. Sobrevive a cerrar la app." />
           </StackPanel>
           <Button Grid.Column="1" Classes="accent-outline" Content="Limpiar historial" Command="{Binding ClearHistoryCommand}"
                   IsVisible="{Binding HasHistory}" VerticalAlignment="Top" />
@@ -603,7 +685,7 @@
             <StackPanel Orientation="Horizontal" Spacing="20">
               <Image Source="avares://Fragua.App/Assets/Icons/fragua-lockup.png" Width="140"
                      HorizontalAlignment="Left" />
-              <TextBlock Text="v0.3.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
+              <TextBlock Text="v0.4.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
             </StackPanel>
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
             <TextBlock Text="Disenado y desarrollado por Fernando Rodriguez, 2026." TextWrapping="Wrap" />

@@ -50,6 +50,8 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
 
         LoadHistoryFromDatabase();
         LoadPresetsFromDatabase();
+        SyncFormatSelection();
+        SyncResizeModeSelection();
     }
 
     [ObservableProperty]
@@ -239,12 +241,48 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     private bool _lastRunFailed;
 
     // Svg queda afuera: es la salida de Vectorizar, no un formato al que se
-    // pueda convertir desde el selector de "Formato de salida".
-    public ObservableCollection<ImageFormat> AvailableFormats { get; } =
-        new(Enum.GetValues<ImageFormat>().Where(f => f != ImageFormat.Svg));
+    // pueda convertir desde el selector de "Formato de salida". El texto de
+    // cada tarjeta es para el usuario final, no el nombre del enum.
+    public ObservableCollection<FormatOption> FormatOptions { get; } =
+    [
+        new(ImageFormat.Png, "PNG", "PNG", "Con transparencia"),
+        new(ImageFormat.Jpeg, "JPG", "JPEG", "Fotos, mas liviano"),
+        new(ImageFormat.WebP, "WEBP", "WebP", "Web, buen balance"),
+        new(ImageFormat.Avif, "AVIF", "AVIF", "Maxima compresion"),
+        new(ImageFormat.Tiff, "TIFF", "TIFF", "Sin perdida"),
+        new(ImageFormat.Bmp, "BMP", "BMP", "Sin comprimir"),
+    ];
 
-    public ObservableCollection<ResizeMode> AvailableResizeModes { get; } =
-        new(Enum.GetValues<ResizeMode>());
+    public ObservableCollection<ResizeModeOption> ResizeModeOptions { get; } =
+    [
+        new(ResizeMode.Fit, "FIT", "Ajustar", "Mantiene la proporcion"),
+        new(ResizeMode.Exact, "EX", "Exacto", "Puede distorsionar"),
+        new(ResizeMode.Percentage, "%", "Porcentaje", "Del tamano original"),
+    ];
+
+    [RelayCommand]
+    private void SelectFormat(FormatOption option) => TargetFormat = option.Value;
+
+    [RelayCommand]
+    private void SelectResizeMode(ResizeModeOption option) => ResizeMode = option.Value;
+
+    private void SyncFormatSelection()
+    {
+        foreach (var option in FormatOptions)
+        {
+            option.IsSelected = option.Value == TargetFormat;
+        }
+    }
+
+    private void SyncResizeModeSelection()
+    {
+        foreach (var option in ResizeModeOptions)
+        {
+            option.IsSelected = option.Value == ResizeMode;
+        }
+    }
+
+    partial void OnTargetFormatChanged(ImageFormat value) => SyncFormatSelection();
 
     public bool HasSource => SourceAsset is not null;
     public bool HasResult => ResultAsset is not null;
@@ -269,7 +307,11 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private void GoToTab(AppTab tab) => ActiveTab = tab;
 
-    partial void OnResizeModeChanged(ResizeMode value) => OnPropertyChanged(nameof(IsPercentageMode));
+    partial void OnResizeModeChanged(ResizeMode value)
+    {
+        OnPropertyChanged(nameof(IsPercentageMode));
+        SyncResizeModeSelection();
+    }
 
     partial void OnSourceAssetChanged(ImageAsset? value)
     {

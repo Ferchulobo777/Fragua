@@ -133,6 +133,74 @@
     <Setter Property="Foreground" Value="#161616" />
   </Style>
 
+  <!-- Tarjeta de opcion: reemplaza a los ComboBox de Formato de salida y
+       Modo de redimension. Son pocas opciones fijas que se cambian seguido,
+       no necesitan un menu que abrir y cerrar. -->
+  <Style Selector="Button.option-card">
+    <Setter Property="Background" Value="{DynamicResource FraguaFieldBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource FraguaLineBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}" />
+    <Setter Property="Padding" Value="12,10" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Button.option-card:pointerover">
+    <Setter Property="BorderBrush" Value="{DynamicResource FraguaLineStrongBrush}" />
+  </Style>
+  <Style Selector="Button.option-card.active">
+    <Setter Property="Background" Value="#2E2118" />
+    <Setter Property="BorderBrush" Value="{DynamicResource FraguaEmberBrush}" />
+  </Style>
+  <Style Selector="Button.option-card.active:pointerover">
+    <Setter Property="BorderBrush" Value="{DynamicResource FraguaEmberBrush}" />
+  </Style>
+  <Style Selector="Border.option-badge">
+    <Setter Property="Background" Value="{DynamicResource FraguaElevatedBrush}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource RadiusSm}" />
+    <Setter Property="Padding" Value="6,5" />
+    <Setter Property="MinWidth" Value="42" />
+  </Style>
+  <Style Selector="Button.option-card.active Border.option-badge">
+    <Setter Property="Background" Value="{DynamicResource FraguaEmberBrush}" />
+  </Style>
+  <Style Selector="Border.option-badge TextBlock">
+    <Setter Property="FontFamily" Value="{DynamicResource FontMono}" />
+    <Setter Property="FontSize" Value="10" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource FraguaTextMediumBrush}" />
+    <Setter Property="TextAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Button.option-card.active Border.option-badge TextBlock">
+    <Setter Property="Foreground" Value="#161616" />
+  </Style>
+  <Style Selector="TextBlock.option-hint">
+    <Setter Property="FontSize" Value="10" />
+    <Setter Property="Foreground" Value="{DynamicResource FraguaTextMutedBrush}" />
+  </Style>
+
+  <!-- Foco visible: el resto de la app no lo tenia, se suma aca porque las
+       tarjetas de opcion son el primer control nuevo pensado para navegarse
+       con teclado, no solo con mouse. -->
+  <Style Selector="Button:focus-visible">
+    <Setter Property="BorderBrush" Value="{DynamicResource FraguaEmberBrush}" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
+
+  <!-- Deshabilitado real: antes solo Button se atenuaba, el resto de los
+       controles quedaban con el estilo por defecto de FluentTheme, mas
+       claro que su propio estado activo. -->
+  <Style Selector="TextBox:disabled">
+    <Setter Property="Opacity" Value="0.4" />
+  </Style>
+  <Style Selector="ComboBox:disabled">
+    <Setter Property="Opacity" Value="0.4" />
+  </Style>
+  <Style Selector="Slider:disabled">
+    <Setter Property="Opacity" Value="0.4" />
+  </Style>
+
   <Style Selector="CheckBox">
     <Setter Property="Foreground" Value="{DynamicResource FraguaTextBrush}" />
   </Style>

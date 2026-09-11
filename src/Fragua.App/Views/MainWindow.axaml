@@ -136,7 +136,7 @@
           </Button>
         </StackPanel>
 
-        <TextBlock Grid.Row="2" Text="v0.9.0" Classes="muted" FontSize="{DynamicResource TextXs}"
+        <TextBlock Grid.Row="2" Text="v0.10.0" Classes="muted" FontSize="{DynamicResource TextXs}"
                    Margin="10,0,0,0" />
       </Grid>
     </Border>
@@ -263,6 +263,38 @@
                 <TextBox Grid.Column="1" Text="{Binding HeightText}" PlaceholderText="Alto"
                          IsVisible="{Binding !IsPercentageMode}" />
               </Grid>
+
+              <StackPanel Spacing="10" IsEnabled="{Binding ResizeEnabled}">
+                <TextBlock Text="Plantillas para redes sociales" Classes="eyebrow" />
+                <ItemsControl x:Name="SocialPresetList" ItemsSource="{Binding SocialPresetOptions}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <UniformGrid Columns="2" />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:SocialPresetOption">
+                      <Button Classes="option-card" Margin="3"
+                              Command="{Binding #SocialPresetList.((vm:ConvertViewModel)DataContext).SelectSocialPresetCommand}"
+                              CommandParameter="{Binding}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <Border Classes="option-badge">
+                            <Viewbox Width="16" Height="16">
+                              <Canvas Width="24" Height="24">
+                                <Path Fill="{Binding IconBrush}" Data="{Binding Icon}" />
+                              </Canvas>
+                            </Viewbox>
+                          </Border>
+                          <StackPanel Spacing="0">
+                            <TextBlock Text="{Binding Name}" FontWeight="Medium" FontSize="{DynamicResource TextSm}" />
+                            <TextBlock Text="{Binding Hint}" Classes="option-hint" FontFamily="{DynamicResource FontMono}" />
+                          </StackPanel>
+                        </StackPanel>
+                      </Button>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
             </StackPanel>
 
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
@@ -583,6 +615,38 @@
                 <TextBox Grid.Column="1" Text="{Binding HeightText}" PlaceholderText="Alto"
                          IsVisible="{Binding !IsPercentageMode}" />
               </Grid>
+
+              <StackPanel Spacing="10" IsEnabled="{Binding ResizeEnabled}">
+                <TextBlock Text="Plantillas para redes sociales" Classes="eyebrow" />
+                <ItemsControl x:Name="SocialPresetListBatch" ItemsSource="{Binding SocialPresetOptions}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <UniformGrid Columns="2" />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:SocialPresetOption">
+                      <Button Classes="option-card" Margin="3"
+                              Command="{Binding #SocialPresetListBatch.((vm:ConvertViewModel)DataContext).SelectSocialPresetCommand}"
+                              CommandParameter="{Binding}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <Border Classes="option-badge">
+                            <Viewbox Width="16" Height="16">
+                              <Canvas Width="24" Height="24">
+                                <Path Fill="{Binding IconBrush}" Data="{Binding Icon}" />
+                              </Canvas>
+                            </Viewbox>
+                          </Border>
+                          <StackPanel Spacing="0">
+                            <TextBlock Text="{Binding Name}" FontWeight="Medium" FontSize="{DynamicResource TextSm}" />
+                            <TextBlock Text="{Binding Hint}" Classes="option-hint" FontFamily="{DynamicResource FontMono}" />
+                          </StackPanel>
+                        </StackPanel>
+                      </Button>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
             </StackPanel>
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
             <StackPanel Spacing="10" IsVisible="{Binding !VectorizeEnabled}">
@@ -1083,7 +1147,7 @@
             <StackPanel Orientation="Horizontal" Spacing="20">
               <Image Source="avares://Fragua.App/Assets/Icons/fragua-lockup.png" Width="140"
                      HorizontalAlignment="Left" />
-              <TextBlock Text="v0.9.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
+              <TextBlock Text="v0.10.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
             </StackPanel>
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
             <TextBlock Text="Disenado y desarrollado por Fernando Rodriguez, 2026." TextWrapping="Wrap" />

@@ -27,6 +27,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     private readonly UpscaleModelProvider _upscaleModelProvider;
     private readonly FraguaDatabase _database;
     private readonly IIconSetGenerator _iconSetGenerator;
+    private readonly IWatermarker _watermarker;
 
     public ConvertViewModel(
         ImagePipeline pipeline,
@@ -38,7 +39,8 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         IImageUpscaler upscaler,
         UpscaleModelProvider upscaleModelProvider,
         FraguaDatabase database,
-        IIconSetGenerator iconSetGenerator)
+        IIconSetGenerator iconSetGenerator,
+        IWatermarker watermarker)
     {
         _pipeline = pipeline;
         _resizer = resizer;
@@ -50,11 +52,13 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         _upscaleModelProvider = upscaleModelProvider;
         _database = database;
         _iconSetGenerator = iconSetGenerator;
+        _watermarker = watermarker;
 
         LoadHistoryFromDatabase();
         LoadPresetsFromDatabase();
         SyncFormatSelection();
         SyncResizeModeSelection();
+        SyncWatermarkPositionSelection();
     }
 
     [ObservableProperty]
@@ -243,6 +247,50 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         }
     }
 
+    // --- Marca de agua: texto superpuesto, sin IA, pura geometria y
+    // opacidad con Magick.NET. Va despues de Redimensionar (el tamano de
+    // letra escala con el resultado final) y no aplica si Vectorizar esta
+    // activo (es un efecto raster, no tiene sentido sobre un SVG). ---
+
+    [ObservableProperty]
+    private bool _watermarkEnabled;
+
+    [ObservableProperty]
+    private string _watermarkText = "";
+
+    [ObservableProperty]
+    private double _watermarkOpacity = 0.5;
+
+    public ObservableCollection<WatermarkPositionOption> WatermarkPositionOptions { get; } =
+    [
+        new(WatermarkPosition.TopLeft, "↖", "Arriba izquierda"),
+        new(WatermarkPosition.TopRight, "↗", "Arriba derecha"),
+        new(WatermarkPosition.Center, "•", "Centro"),
+        new(WatermarkPosition.BottomLeft, "↙", "Abajo izquierda"),
+        new(WatermarkPosition.BottomRight, "↘", "Abajo derecha"),
+    ];
+
+    [ObservableProperty]
+    private WatermarkPosition _watermarkPosition = WatermarkPosition.BottomRight;
+
+    [RelayCommand]
+    private void SelectWatermarkPosition(WatermarkPositionOption option) => WatermarkPosition = option.Value;
+
+    private void SyncWatermarkPositionSelection()
+    {
+        foreach (var option in WatermarkPositionOptions)
+        {
+            option.IsSelected = option.Value == WatermarkPosition;
+        }
+    }
+
+    partial void OnWatermarkPositionChanged(WatermarkPosition value) => SyncWatermarkPositionSelection();
+
+    private WatermarkOperation? BuildWatermarkOperation() =>
+        WatermarkEnabled && !VectorizeEnabled && !string.IsNullOrWhiteSpace(WatermarkText)
+            ? new WatermarkOperation(_watermarker, new WatermarkSpec(WatermarkText, WatermarkPosition, WatermarkOpacity))
+            : null;
+
     [ObservableProperty]
     private bool _isConverting;
 
@@ -420,6 +468,12 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
                 {
                     operations.Add(new ResizeOperation(_resizer, spec));
                 }
+            }
+
+            var watermarkOperation = BuildWatermarkOperation();
+            if (watermarkOperation is not null)
+            {
+                operations.Add(watermarkOperation);
             }
 
             if (VectorizeEnabled)
@@ -651,6 +705,11 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
                     {
                         operations.Add(new ResizeOperation(_resizer, spec));
                     }
+                }
+                var watermarkOperation = BuildWatermarkOperation();
+                if (watermarkOperation is not null)
+                {
+                    operations.Add(watermarkOperation);
                 }
                 if (VectorizeEnabled)
                 {

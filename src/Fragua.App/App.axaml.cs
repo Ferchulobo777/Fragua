@@ -62,6 +62,7 @@ public partial class App : Application
             new OnnxImageUpscaler(sp.GetRequiredService<UpscaleModelProvider>().ModelPath));
         services.AddSingleton<FraguaDatabase>();
         services.AddSingleton<IIconSetGenerator, MagickIconSetGenerator>();
+        services.AddSingleton<IWatermarker, MagickWatermarker>();
         services.AddTransient<ConvertViewModel>();
 
         return services.BuildServiceProvider();

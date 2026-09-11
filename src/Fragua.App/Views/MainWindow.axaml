@@ -108,7 +108,7 @@
           </Button>
         </StackPanel>
 
-        <TextBlock Grid.Row="2" Text="v0.6.0" Classes="muted" FontSize="{DynamicResource TextXs}"
+        <TextBlock Grid.Row="2" Text="v0.7.0" Classes="muted" FontSize="{DynamicResource TextXs}"
                    Margin="10,0,0,0" />
       </Grid>
     </Border>
@@ -334,6 +334,43 @@
                          Text="{Binding UpscaleModelDownloadError}"
                          IsVisible="{Binding UpscaleModelDownloadError, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
                          TextWrapping="Wrap" />
+            </StackPanel>
+
+            <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
+
+            <StackPanel Spacing="10" IsVisible="{Binding !VectorizeEnabled}">
+              <CheckBox IsChecked="{Binding WatermarkEnabled}" Content="Marca de agua" />
+              <StackPanel Spacing="10" IsEnabled="{Binding WatermarkEnabled}">
+                <TextBox Text="{Binding WatermarkText}" PlaceholderText="Texto de la marca de agua" />
+
+                <ItemsControl x:Name="WatermarkPositionList" ItemsSource="{Binding WatermarkPositionOptions}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <UniformGrid Columns="3" />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:WatermarkPositionOption">
+                      <Button Classes="option-card" Classes.active="{Binding IsSelected}" Margin="3"
+                              Command="{Binding #WatermarkPositionList.((vm:ConvertViewModel)DataContext).SelectWatermarkPositionCommand}"
+                              CommandParameter="{Binding}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <Border Classes="option-badge"><TextBlock Text="{Binding Badge}" /></Border>
+                          <TextBlock Text="{Binding Name}" FontWeight="Medium" FontSize="{DynamicResource TextSm}" />
+                        </StackPanel>
+                      </Button>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Grid ColumnDefinitions="*,Auto">
+                  <Slider Grid.Column="0" Minimum="0.1" Maximum="1" Value="{Binding WatermarkOpacity}"
+                          VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Text="{Binding WatermarkOpacity, Converter={StaticResource Percent}}"
+                             FontFamily="{DynamicResource FontMono}" VerticalAlignment="Center"
+                             Margin="10,0,0,0" Width="45" TextAlignment="Right" />
+                </Grid>
+              </StackPanel>
             </StackPanel>
 
           </StackPanel>
@@ -605,6 +642,43 @@
                          IsVisible="{Binding UpscaleModelDownloadError, Converter={x:Static convData:ObjectConverters.IsNotNull}}"
                          TextWrapping="Wrap" />
             </StackPanel>
+
+            <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
+
+            <StackPanel Spacing="10" IsVisible="{Binding !VectorizeEnabled}">
+              <CheckBox IsChecked="{Binding WatermarkEnabled}" Content="Marca de agua" />
+              <StackPanel Spacing="10" IsEnabled="{Binding WatermarkEnabled}">
+                <TextBox Text="{Binding WatermarkText}" PlaceholderText="Texto de la marca de agua" />
+
+                <ItemsControl x:Name="WatermarkPositionListBatch" ItemsSource="{Binding WatermarkPositionOptions}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <UniformGrid Columns="3" />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:WatermarkPositionOption">
+                      <Button Classes="option-card" Classes.active="{Binding IsSelected}" Margin="3"
+                              Command="{Binding #WatermarkPositionListBatch.((vm:ConvertViewModel)DataContext).SelectWatermarkPositionCommand}"
+                              CommandParameter="{Binding}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <Border Classes="option-badge"><TextBlock Text="{Binding Badge}" /></Border>
+                          <TextBlock Text="{Binding Name}" FontWeight="Medium" FontSize="{DynamicResource TextSm}" />
+                        </StackPanel>
+                      </Button>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Grid ColumnDefinitions="*,Auto">
+                  <Slider Grid.Column="0" Minimum="0.1" Maximum="1" Value="{Binding WatermarkOpacity}"
+                          VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Text="{Binding WatermarkOpacity, Converter={StaticResource Percent}}"
+                             FontFamily="{DynamicResource FontMono}" VerticalAlignment="Center"
+                             Margin="10,0,0,0" Width="45" TextAlignment="Right" />
+                </Grid>
+              </StackPanel>
+            </StackPanel>
           </StackPanel>
         </Border>
 
@@ -811,7 +885,7 @@
             <StackPanel Orientation="Horizontal" Spacing="20">
               <Image Source="avares://Fragua.App/Assets/Icons/fragua-lockup.png" Width="140"
                      HorizontalAlignment="Left" />
-              <TextBlock Text="v0.6.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
+              <TextBlock Text="v0.7.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
             </StackPanel>
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
             <TextBlock Text="Disenado y desarrollado por Fernando Rodriguez, 2026." TextWrapping="Wrap" />

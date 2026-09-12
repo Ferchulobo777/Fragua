@@ -200,4 +200,20 @@ public partial class MainWindow : Window
 
         await vm.PickColorFromImageAsync(localX / displayedWidth, localY / displayedHeight);
     }
+
+    private async void OnPickScreenColorClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not ConvertViewModel vm)
+        {
+            return;
+        }
+
+        var overlay = new ColorPickerOverlayWindow();
+        await overlay.ShowDialog(this);
+
+        if (overlay.PickedHex is not null)
+        {
+            vm.SetPickedColor(overlay.PickedHex);
+        }
+    }
 }

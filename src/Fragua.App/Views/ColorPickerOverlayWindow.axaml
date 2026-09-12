@@ -1,0 +1,24 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Fragua.App.Views.ColorPickerOverlayWindow"
+        WindowDecorations="None"
+        WindowStartupLocation="Manual"
+        ShowInTaskbar="False"
+        Topmost="True"
+        CanResize="False"
+        Background="#01000000"
+        TransparencyLevelHint="Transparent"
+        Cursor="Cross">
+
+  <Canvas x:Name="RootCanvas" Background="Transparent">
+    <Border x:Name="InfoBadge" Background="#EE161616" CornerRadius="8" Padding="10,8"
+            BorderBrush="#33FFFFFF" BorderThickness="1" IsHitTestVisible="False">
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <Border x:Name="SwatchPreview" Width="18" Height="18" CornerRadius="4"
+                BorderBrush="White" BorderThickness="1" />
+        <TextBlock x:Name="HexLabel" Foreground="White" FontFamily="Consolas,monospace" FontSize="13" />
+      </StackPanel>
+    </Border>
+  </Canvas>
+
+</Window>

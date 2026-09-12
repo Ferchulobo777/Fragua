@@ -153,7 +153,7 @@
           </Button>
         </StackPanel>
 
-        <TextBlock Grid.Row="2" Text="v0.13.0" Classes="muted" FontSize="{DynamicResource TextXs}"
+        <TextBlock Grid.Row="2" Text="v0.14.0" Classes="muted" FontSize="{DynamicResource TextXs}"
                    Margin="10,0,0,0" />
       </Grid>
     </Border>
@@ -1114,19 +1114,26 @@
           </Grid>
         </Border>
 
-        <Border Classes="panel" Padding="20" IsVisible="{Binding HasSource}">
+        <Border Classes="panel" Padding="20">
           <StackPanel Spacing="14">
-            <StackPanel Spacing="4">
-              <TextBlock Text="Cuentagotas" Classes="eyebrow" />
-              <TextBlock Text="Hace clic en cualquier punto de la imagen para sacar ese color exacto."
-                         Classes="muted" />
-            </StackPanel>
+            <Grid ColumnDefinitions="*,Auto">
+              <StackPanel Grid.Column="0" Spacing="4">
+                <TextBlock Text="Cuentagotas" Classes="eyebrow" />
+                <TextBlock Text="Hace clic en la imagen cargada, o en cualquier parte de la pantalla con el boton."
+                           Classes="muted" TextWrapping="Wrap" />
+              </StackPanel>
+              <Button Grid.Column="1" Classes="ghost" Content="Tomar de la pantalla"
+                      Click="OnPickScreenColorClick" VerticalAlignment="Top" />
+            </Grid>
 
             <Border Background="{DynamicResource FraguaFieldBrush}" CornerRadius="{DynamicResource RadiusMd}"
-                    ClipToBounds="True" MaxHeight="320">
+                    ClipToBounds="True" MaxHeight="320" IsVisible="{Binding HasSource}">
               <Image Source="{Binding SourcePreview}" Stretch="Uniform" Cursor="Cross"
                      PointerPressed="OnPickColorFromImage" />
             </Border>
+
+            <TextBlock Classes="muted" IsVisible="{Binding !HasSource}"
+                       Text="Todavia no cargaste una imagen: podes cargar una arriba, o tomar un color de cualquier parte de la pantalla con el boton." />
 
             <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14"
                   IsVisible="{Binding PickedColor, Converter={x:Static convData:ObjectConverters.IsNotNull}}">
@@ -1444,7 +1451,7 @@
             <StackPanel Orientation="Horizontal" Spacing="20">
               <Image Source="avares://Fragua.App/Assets/Icons/fragua-lockup.png" Width="140"
                      HorizontalAlignment="Left" />
-              <TextBlock Text="v0.13.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
+              <TextBlock Text="v0.14.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
             </StackPanel>
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
             <TextBlock Text="Disenado y desarrollado por Fernando Rodriguez, 2026." TextWrapping="Wrap" />

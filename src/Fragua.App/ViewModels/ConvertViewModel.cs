@@ -1249,6 +1249,13 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         }
     }
 
+    /// <summary>Lo llama el cuentagotas de pantalla completa (MainWindow), que lee el pixel via Win32.</summary>
+    public void SetPickedColor(string hex)
+    {
+        PickedColor = new ColorSwatchItem(hex);
+        EyedropperError = null;
+    }
+
     // --- Generador de paletas: matematica de color pura (rotacion de
     // matiz), no necesita ninguna imagen cargada. Independiente del
     // cuentagotas y de la paleta automatica de arriba. ---

@@ -153,7 +153,7 @@
           </Button>
         </StackPanel>
 
-        <TextBlock Grid.Row="2" Text="v0.12.0" Classes="muted" FontSize="{DynamicResource TextXs}"
+        <TextBlock Grid.Row="2" Text="v0.13.0" Classes="muted" FontSize="{DynamicResource TextXs}"
                    Margin="10,0,0,0" />
       </Grid>
     </Border>
@@ -1197,6 +1197,74 @@
                      TextWrapping="Wrap" />
         </StackPanel>
 
+        <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
+
+        <Border Classes="panel" Padding="20">
+          <StackPanel Spacing="16">
+            <StackPanel Spacing="4">
+              <TextBlock Text="Generador de paletas" Classes="eyebrow" />
+              <TextBlock Text="Arma una paleta a partir de un color base. No necesita ninguna imagen cargada."
+                         Classes="muted" TextWrapping="Wrap" />
+            </StackPanel>
+
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+              <TextBox Grid.Column="0" Text="{Binding HarmonyBaseHex}" PlaceholderText="#F27636" />
+              <Button Grid.Column="1" Classes="ghost" Content="Usar el del cuentagotas"
+                      Command="{Binding UsePickedColorAsHarmonyBaseCommand}"
+                      IsEnabled="{Binding PickedColor, Converter={x:Static convData:ObjectConverters.IsNotNull}}" />
+            </Grid>
+
+            <ItemsControl x:Name="HarmonyOptionsList" ItemsSource="{Binding HarmonyOptions}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <UniformGrid Columns="2" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="models:HarmonyOption">
+                  <Button Classes="option-card" Classes.active="{Binding IsSelected}" Margin="3"
+                          Command="{Binding #HarmonyOptionsList.((vm:ConvertViewModel)DataContext).SelectHarmonyCommand}"
+                          CommandParameter="{Binding}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <Border Classes="option-badge"><TextBlock Text="{Binding Badge}" /></Border>
+                      <StackPanel Spacing="0">
+                        <TextBlock Text="{Binding Name}" FontWeight="Medium" FontSize="{DynamicResource TextSm}" />
+                        <TextBlock Text="{Binding Hint}" Classes="option-hint" />
+                      </StackPanel>
+                    </StackPanel>
+                  </Button>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Classes="muted" Foreground="{DynamicResource FraguaErrorBrush}"
+                       Text="{Binding HarmonyError}"
+                       IsVisible="{Binding HarmonyError, Converter={x:Static convData:ObjectConverters.IsNotNull}}" />
+
+            <ItemsControl ItemsSource="{Binding HarmonyColors}" IsVisible="{Binding HasHarmonyColors}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="models:ColorSwatchItem">
+                  <Grid ColumnDefinitions="Auto,Auto,*,Auto" Margin="0,6" ColumnSpacing="14">
+                    <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8"
+                            Background="{Binding Brush}" BorderBrush="{DynamicResource FraguaLineBrush}"
+                            BorderThickness="1" />
+                    <TextBlock Grid.Column="1" Text="{Binding Hex}" FontFamily="{DynamicResource FontMono}"
+                               VerticalAlignment="Center" Width="90" />
+                    <TextBlock Grid.Column="2" Text="{Binding RgbText}" Classes="muted"
+                               VerticalAlignment="Center" FontFamily="{DynamicResource FontMono}" />
+                    <Button Grid.Column="3" Classes="ghost" Content="Copiar" Tag="{Binding Hex}"
+                            Click="OnCopyHexClick" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Classes="muted" Foreground="{DynamicResource FraguaSuccessBrush}"
+                       Text="{Binding PaletteStatusMessage}"
+                       IsVisible="{Binding PaletteStatusMessage, Converter={x:Static convData:ObjectConverters.IsNotNull}}" />
+          </StackPanel>
+        </Border>
+
       </StackPanel>
 
       <!-- Pestana Collage: junta varias imagenes sueltas en una sola
@@ -1376,7 +1444,7 @@
             <StackPanel Orientation="Horizontal" Spacing="20">
               <Image Source="avares://Fragua.App/Assets/Icons/fragua-lockup.png" Width="140"
                      HorizontalAlignment="Left" />
-              <TextBlock Text="v0.12.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
+              <TextBlock Text="v0.13.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
             </StackPanel>
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
             <TextBlock Text="Disenado y desarrollado por Fernando Rodriguez, 2026." TextWrapping="Wrap" />

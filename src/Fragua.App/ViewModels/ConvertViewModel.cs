@@ -71,6 +71,8 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         SyncFormatSelection();
         SyncResizeModeSelection();
         SyncWatermarkPositionSelection();
+        SyncHarmonySelection();
+        RefreshHarmony();
     }
 
     [ObservableProperty]
@@ -1223,7 +1225,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     // sobre la imagen cargada, no un promedio ni una cuantizacion. ---
 
     [ObservableProperty]
-    private EyedropperColorItem? _pickedColor;
+    private ColorSwatchItem? _pickedColor;
 
     [ObservableProperty]
     private string? _eyedropperError;
@@ -1238,12 +1240,86 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         try
         {
             var result = await _pixelColorReader.ReadAsync(SourceAsset, fractionX, fractionY, CancellationToken.None);
-            PickedColor = new EyedropperColorItem(result.Hex, result.R, result.G, result.B);
+            PickedColor = new ColorSwatchItem(result.Hex);
             EyedropperError = null;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             EyedropperError = "No se pudo leer el color de ese punto.";
+        }
+    }
+
+    // --- Generador de paletas: matematica de color pura (rotacion de
+    // matiz), no necesita ninguna imagen cargada. Independiente del
+    // cuentagotas y de la paleta automatica de arriba. ---
+
+    public ObservableCollection<HarmonyOption> HarmonyOptions { get; } =
+    [
+        new(ColorHarmony.Complementary, "180", "Complementaria", "El color opuesto"),
+        new(ColorHarmony.Analogous, "±30", "Analoga", "Vecinos del color"),
+        new(ColorHarmony.Triadic, "120", "Triadica", "Tres colores equidistantes"),
+        new(ColorHarmony.Monochromatic, "1H", "Monocromatica", "Mismo matiz, distinta luz"),
+    ];
+
+    public ObservableCollection<ColorSwatchItem> HarmonyColors { get; } = [];
+
+    public bool HasHarmonyColors => HarmonyColors.Count > 0;
+
+    [ObservableProperty]
+    private string _harmonyBaseHex = "#F27636";
+
+    [ObservableProperty]
+    private ColorHarmony _harmonyType = ColorHarmony.Complementary;
+
+    [ObservableProperty]
+    private string? _harmonyError;
+
+    [RelayCommand]
+    private void SelectHarmony(HarmonyOption option) => HarmonyType = option.Value;
+
+    private void SyncHarmonySelection()
+    {
+        foreach (var option in HarmonyOptions)
+        {
+            option.IsSelected = option.Value == HarmonyType;
+        }
+    }
+
+    partial void OnHarmonyTypeChanged(ColorHarmony value)
+    {
+        SyncHarmonySelection();
+        RefreshHarmony();
+    }
+
+    partial void OnHarmonyBaseHexChanged(string value) => RefreshHarmony();
+
+    private void RefreshHarmony()
+    {
+        HarmonyColors.Clear();
+        HarmonyError = null;
+
+        try
+        {
+            foreach (var hex in ColorHarmonyGenerator.Generate(HarmonyBaseHex, HarmonyType))
+            {
+                HarmonyColors.Add(new ColorSwatchItem(hex));
+            }
+        }
+        catch (Exception ex) when (ex is FormatException or ArgumentOutOfRangeException or IndexOutOfRangeException)
+        {
+            HarmonyError = "Ese no es un color hexadecimal valido (ej: #F27636).";
+        }
+
+        OnPropertyChanged(nameof(HasHarmonyColors));
+    }
+
+    /// <summary>Copia el color elegido en el cuentagotas como base del generador.</summary>
+    [RelayCommand]
+    private void UsePickedColorAsHarmonyBase()
+    {
+        if (PickedColor is not null)
+        {
+            HarmonyBaseHex = PickedColor.Hex;
         }
     }
 

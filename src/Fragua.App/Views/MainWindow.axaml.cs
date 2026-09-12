@@ -153,4 +153,51 @@ public partial class MainWindow : Window
         await clipboard.SetTextAsync(hex);
         vm.PaletteStatusMessage = $"Copiado {hex} al portapapeles.";
     }
+
+    private async void OnPickColorFromImage(object? sender, PointerPressedEventArgs e)
+    {
+        if (sender is not Image image || DataContext is not ConvertViewModel { SourceAsset: { } asset } vm)
+        {
+            return;
+        }
+
+        var controlWidth = image.Bounds.Width;
+        var controlHeight = image.Bounds.Height;
+        if (controlWidth <= 0 || controlHeight <= 0)
+        {
+            return;
+        }
+
+        // Image usa Stretch="Uniform": la imagen real puede quedar mas chica
+        // que el control (barras vacias arriba/abajo o a los costados), asi
+        // que hay que calcular su rectangulo real antes de mapear el click.
+        var imageAspect = (double)asset.WidthPixels / asset.HeightPixels;
+        var controlAspect = controlWidth / controlHeight;
+
+        double displayedWidth, displayedHeight, offsetX, offsetY;
+        if (imageAspect > controlAspect)
+        {
+            displayedWidth = controlWidth;
+            displayedHeight = controlWidth / imageAspect;
+            offsetX = 0;
+            offsetY = (controlHeight - displayedHeight) / 2;
+        }
+        else
+        {
+            displayedHeight = controlHeight;
+            displayedWidth = controlHeight * imageAspect;
+            offsetY = 0;
+            offsetX = (controlWidth - displayedWidth) / 2;
+        }
+
+        var position = e.GetPosition(image);
+        var localX = position.X - offsetX;
+        var localY = position.Y - offsetY;
+        if (localX < 0 || localY < 0 || localX > displayedWidth || localY > displayedHeight)
+        {
+            return;
+        }
+
+        await vm.PickColorFromImageAsync(localX / displayedWidth, localY / displayedHeight);
+    }
 }

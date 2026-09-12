@@ -66,6 +66,7 @@ public partial class App : Application
         services.AddSingleton<IMetadataService, MagickMetadataService>();
         services.AddSingleton<IColorPaletteExtractor, MagickColorPaletteExtractor>();
         services.AddSingleton<ICollageComposer, MagickCollageComposer>();
+        services.AddSingleton<IPixelColorReader, MagickPixelColorReader>();
         services.AddTransient<ConvertViewModel>();
 
         return services.BuildServiceProvider();

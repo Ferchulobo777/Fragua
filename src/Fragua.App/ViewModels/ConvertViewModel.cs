@@ -31,6 +31,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
     private readonly IMetadataService _metadataService;
     private readonly IColorPaletteExtractor _paletteExtractor;
     private readonly ICollageComposer _collageComposer;
+    private readonly IPixelColorReader _pixelColorReader;
 
     public ConvertViewModel(
         ImagePipeline pipeline,
@@ -46,7 +47,8 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         IWatermarker watermarker,
         IMetadataService metadataService,
         IColorPaletteExtractor paletteExtractor,
-        ICollageComposer collageComposer)
+        ICollageComposer collageComposer,
+        IPixelColorReader pixelColorReader)
     {
         _pipeline = pipeline;
         _resizer = resizer;
@@ -62,6 +64,7 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
         _metadataService = metadataService;
         _paletteExtractor = paletteExtractor;
         _collageComposer = collageComposer;
+        _pixelColorReader = pixelColorReader;
 
         LoadHistoryFromDatabase();
         LoadPresetsFromDatabase();
@@ -495,6 +498,9 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
             PaletteColors.Clear();
             OnPropertyChanged(nameof(HasPaletteColors));
         }
+
+        PickedColor = null;
+        EyedropperError = null;
     }
 
     private static readonly TimeSpan MinVisibleDuration = TimeSpan.FromMilliseconds(900);
@@ -1212,6 +1218,34 @@ public sealed partial class ConvertViewModel : ViewModelBase, IDisposable
 
     [ObservableProperty]
     private int _paletteColorCount = 6;
+
+    // --- Cuentagotas: el color exacto de un punto que el usuario clickea
+    // sobre la imagen cargada, no un promedio ni una cuantizacion. ---
+
+    [ObservableProperty]
+    private EyedropperColorItem? _pickedColor;
+
+    [ObservableProperty]
+    private string? _eyedropperError;
+
+    public async Task PickColorFromImageAsync(double fractionX, double fractionY)
+    {
+        if (SourceAsset is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var result = await _pixelColorReader.ReadAsync(SourceAsset, fractionX, fractionY, CancellationToken.None);
+            PickedColor = new EyedropperColorItem(result.Hex, result.R, result.G, result.B);
+            EyedropperError = null;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            EyedropperError = "No se pudo leer el color de ese punto.";
+        }
+    }
 
     private async Task RefreshPaletteAsync()
     {

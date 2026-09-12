@@ -153,7 +153,7 @@
           </Button>
         </StackPanel>
 
-        <TextBlock Grid.Row="2" Text="v0.11.1" Classes="muted" FontSize="{DynamicResource TextXs}"
+        <TextBlock Grid.Row="2" Text="v0.12.0" Classes="muted" FontSize="{DynamicResource TextXs}"
                    Margin="10,0,0,0" />
       </Grid>
     </Border>
@@ -1114,6 +1114,39 @@
           </Grid>
         </Border>
 
+        <Border Classes="panel" Padding="20" IsVisible="{Binding HasSource}">
+          <StackPanel Spacing="14">
+            <StackPanel Spacing="4">
+              <TextBlock Text="Cuentagotas" Classes="eyebrow" />
+              <TextBlock Text="Hace clic en cualquier punto de la imagen para sacar ese color exacto."
+                         Classes="muted" />
+            </StackPanel>
+
+            <Border Background="{DynamicResource FraguaFieldBrush}" CornerRadius="{DynamicResource RadiusMd}"
+                    ClipToBounds="True" MaxHeight="320">
+              <Image Source="{Binding SourcePreview}" Stretch="Uniform" Cursor="Cross"
+                     PointerPressed="OnPickColorFromImage" />
+            </Border>
+
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14"
+                  IsVisible="{Binding PickedColor, Converter={x:Static convData:ObjectConverters.IsNotNull}}">
+              <Border Grid.Column="0" Width="48" Height="48" CornerRadius="{DynamicResource RadiusMd}"
+                      Background="{Binding PickedColor.Brush}" BorderBrush="{DynamicResource FraguaLineBrush}"
+                      BorderThickness="1" />
+              <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Text="{Binding PickedColor.Hex}" FontFamily="{DynamicResource FontMono}" FontWeight="Medium" />
+                <TextBlock Text="{Binding PickedColor.RgbText}" Classes="muted" FontFamily="{DynamicResource FontMono}" />
+              </StackPanel>
+              <Button Grid.Column="2" Classes="ghost" Content="Copiar" Tag="{Binding PickedColor.Hex}"
+                      Click="OnCopyHexClick" VerticalAlignment="Center" />
+            </Grid>
+
+            <TextBlock Classes="muted" Foreground="{DynamicResource FraguaErrorBrush}"
+                       Text="{Binding EyedropperError}"
+                       IsVisible="{Binding EyedropperError, Converter={x:Static convData:ObjectConverters.IsNotNull}}" />
+          </StackPanel>
+        </Border>
+
         <StackPanel Spacing="16" IsVisible="{Binding HasSource}">
           <StackPanel Spacing="10">
             <TextBlock Text="Cantidad de colores" />
@@ -1343,7 +1376,7 @@
             <StackPanel Orientation="Horizontal" Spacing="20">
               <Image Source="avares://Fragua.App/Assets/Icons/fragua-lockup.png" Width="140"
                      HorizontalAlignment="Left" />
-              <TextBlock Text="v0.11.1" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
+              <TextBlock Text="v0.12.0" Classes="muted" VerticalAlignment="Bottom" Margin="0,0,0,4" />
             </StackPanel>
             <Separator Background="{DynamicResource FraguaLineBrush}" Height="1" />
             <TextBlock Text="Disenado y desarrollado por Fernando Rodriguez, 2026." TextWrapping="Wrap" />
